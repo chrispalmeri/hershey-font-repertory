@@ -1,0 +1,64 @@
+body {
+	margin: 8px;
+	background: #000;
+}
+svg {
+	color: #007bff; /* 4600 angstrom ish */
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	overflow: visible;
+}
+rect {
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 0.4;
+	stroke-dasharray: 0 1;
+}
+text {
+	font-size: 2.4px;
+	font-family: sans-serif;
+	font-weight: bold;
+	fill: currentColor;
+	stroke: none;
+}
+path {
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.7px; /* minimum to not leave gaps, mostly */
+}
+#details {
+	width: 252px;
+	height: 300px;
+	float: right;
+	margin: 0 0 8px 8px;
+}
+#groups {
+	float: left;
+	display: flex;
+	flex-direction: column;
+}
+button {
+	margin: 0 8px 8px 0;
+}
+
+#output {
+	display: flex;
+	flex-wrap: wrap;
+	max-height: 90vh;
+	overflow-y: auto;
+}
+#output > * {
+	width: 42px;
+	height: 50px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border: 1px solid #333;
+	margin: 4px;
+	cursor: pointer;
+}
+
+line {
+	stroke: #f00;
+	stroke-width: 0.2;
+}
