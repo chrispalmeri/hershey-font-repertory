@@ -5,31 +5,40 @@
 		<script type="module" src="js/main.js"></script>
 	</head>
 	<body>
-		<div>
-			<button id="usenet">usenet data</button>
-			<button id="csv">csv data (filtered to oriental missing unicode)</button>
-		</div>
+		<main>
+			<div class="left">
+				<button id="occsv">occidental csv</button>
+				<button id="orcsv">oriental csv</button>
+				<button id="usenet">usenet occidental groups</button>
+				<ul id="groups"></ul>
+			</div>
 
-		<div id="groups">
-		</div>
+			<div id="output"></div>
 
-		<svg id="details" viewBox="-21 -25 42 50">
-			<rect x="-17" y="-21" width="34" height="42"></rect>
-			<text x="-13.2" y="-16.6"></text>
-			<path d=""></path>
+			<div class="right">
+				<svg id="details" viewBox="-21 -25 42 50">
+					<rect x="-17" y="-21" width="34" height="42"></rect>
+					<text x="-13.2" y="-16.6"></text>
+					<path d=""></path>
 
-			<!-- described heights and widths
-			<line x1="-7" y1="-12" x2="7" y2="-12"></line>
-			<line x1="-7" y1="9" x2="7" y2="9"></line>
+					<!-- described heights and widths, em 32, 21, ?14-15-->
+					<line x1="-7" y1="-12" x2="7" y2="-12"></line>
+					<line x1="-7" y1="9" x2="7" y2="9"></line>
 
-			<line x1="-5" y1="-7" x2="5" y2="-7"></line>
-			<line x1="-5" y1="6" x2="5" y2="6"></line>
+					<line x1="-5" y1="-7" x2="5" y2="-7"></line>
+					<line x1="-5" y1="6" x2="5" y2="6"></line>
 
-			<line x1="-3" y1="-5" x2="3" y2="-5"></line>
-			<line x1="-3" y1="4" x2="3" y2="4"></line>
-			-->
-		</svg>
+					<line x1="-3" y1="-5" x2="3" y2="-5"></line>
+					<line x1="-3" y1="4" x2="3" y2="4"></line>
 
-		<div id="output"></div>
+				</svg>
+				<table id="desc">
+					<tr><td>Id:</td><td id="id"></td></tr>
+					<tr><td>Group:</td><td id="group"></td></tr>
+					<tr><td>Description:</td><td id="description"></td></tr>
+					<tr><td>Unicode:</td><td id="unicode"></td></tr>
+				</table>
+			</div>
+		</main>
 	</body>
 </html>

@@ -86,21 +86,29 @@ function showOldGroups() {
 	document.getElementById('groups').innerHTML = '';
 
 	// All button
-	const button = document.createElement('button');
+	const button = document.createElement('a');
+	button.href = '#';
 	button.innerHTML = 'All';
-	button.addEventListener('click', function () {
+	button.addEventListener('click', function (e) {
+		e.preventDefault();
 		render();
 	});
-	document.getElementById('groups').appendChild(button);
+	const li = document.createElement('li');
+	li.appendChild(button);
+	document.getElementById('groups').appendChild(li);
 
 	// Group buttons
 	for (const group of groups) {
-		const button = document.createElement('button');
+		const button = document.createElement('a');
+		button.href = '#';
 		button.innerHTML = group.name;
-		button.addEventListener('click', function () {
+		button.addEventListener('click', function (e) {
+			e.preventDefault();
 			render(group.file);
 		});
-		document.getElementById('groups').appendChild(button);
+		const li = document.createElement('li');
+		li.appendChild(button);
+		document.getElementById('groups').appendChild(li);
 	}
 
 	render();
@@ -109,4 +117,9 @@ function showOldGroups() {
 document.getElementById('usenet').addEventListener('click', showOldGroups);
 
 
-document.getElementById('csv').addEventListener('click', showCsv);
+document.getElementById('occsv').addEventListener('click', function() {
+	showCsv('Occidental');
+});
+document.getElementById('orcsv').addEventListener('click', function() {
+	showCsv('Oriental');
+});

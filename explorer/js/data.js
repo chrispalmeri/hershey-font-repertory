@@ -1,7 +1,7 @@
 import { parse } from './csv-parse/sync.js';
 import { thumbnail } from './render.js';
 
-const data = [];
+let data = [];
 
 async function loadData(url) {
 	const file = await fetch(url);
@@ -23,22 +23,27 @@ async function loadData(url) {
 	}
 }
 
-async function showCsv() {
+async function showCsv(set) {
 	document.getElementById('groups').innerHTML = '';
 	document.getElementById('output').innerHTML = '';
+	data = [];
 
-	await loadData('data/Oriental Metadata.csv');
-	await loadData('data/Oriental Paths.csv');
+	await loadData('data/' + set + ' Metadata.csv');
+	await loadData('data/' + set + ' Paths.csv');
 
 	// filter those with no Unicode info yet
-	const filtered = data.filter(element => element['Unicode'] === '');
+	//const filtered = data.filter(element => element['Unicode'] === '');
+	const filtered = data;
 
 	for (const record of filtered) {
 		thumbnail({
 			id: record['Glyph Number'],
 			left: record['Left Bearing'],
 			right: record['Right Bearing'],
-			path: record['SVG Path']
+			path: record['SVG Path'],
+			desc: record['NBS Description'] || record['NWL Pronunciation'],
+			unicode: record['Unicode'],
+			group: record['NBS Font'] || record['NWL Section']
 		});
 	}
 }
