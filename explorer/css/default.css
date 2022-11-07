@@ -39,7 +39,8 @@ text {
 path {
 	fill: none;
 	stroke: currentColor;
-	stroke-width: 1.7px; /* minimum to not leave gaps, mostly */
+	/*stroke-width: 1.7px;*/ /* minimum to not leave gaps, mostly */
+	stroke-width: 1.1px; /* more like the NWL pages */
 }
 
 button {

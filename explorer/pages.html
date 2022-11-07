@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" href="css/pages.css">
+		<script type="module" src="js/pages.js"></script>
+	</head>
+	<body>
+		<main>
+			<div id="svg"></div>
+			<div id="controls">
+				<p><table>
+					<tr><td>group:</td><td><select id="group"><option selected>Occidental</option><option>Oriental</option></select></td></tr>
+					<tr><td>glyphs:</td><td><input type="text" value="501-520" id="glyphs"></td></tr>
+					<tr><td>columns:</td><td><input type="number" value="5" id="columns"></td></tr>
+					<tr><td>rows:</td><td><input type="number" value="4" id="rows"></td></tr>
+					<tr><td>width:</td><td><input type="number" value="34" id="width"></td></tr>
+					<tr><td>height:</td><td><input type="number" value="42" id="height"></td></tr>
+					<tr><td>offset:</td><td><input type="number" value="1" id="offset"></td></tr>
+					<tr><td>nearby:</td><td><input type="checkbox" checked id="nearby"></td></tr>
+					<tr><td>bearings:</td><td><input type="checkbox" checked id="bearings"></td></tr>
+					<tr><td>front:</td><td><input type="checkbox" checked id="front"></td></tr>
+				</table></p>
+				<p><button id="generate">Generate</button></p>
+				<p><a id="download" href="#">Download</a></p>
+				<p><code>glyphs</code> is a whitespace separated list of glyph numbers, ranges, or null (e.g. <code>501 null 503-520</code>).</p>
+				<p><code>offset</code> is vertical shift of glyph and tick marks within cell, positive is down, negative is up.</p>
+				<p><code>nearby</code> controls whether tick marks are shown when within one unit of cell boundary.</p>
+			</div>
+		</main>
+	</body>
+</html>

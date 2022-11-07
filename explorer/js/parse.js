@@ -1,3 +1,5 @@
+import { parseRange } from './utilities.js';
+
 const center = 'R'.charCodeAt(0);
 
 const whole = {};
@@ -162,26 +164,7 @@ async function parseMap(url) {
 	const file = await fetch(url);
 	const text = await file.text();
 
-	const output = [];
-
-	const matches = text.matchAll(/\S+/g);
-
-	for (const match of matches) {
-		const value = match[0];
-
-		if (/-/.test(value)) {
-			const bounds = value.split('-');
-			const start = parseInt(bounds[0]);
-			const end = parseInt(bounds[1]);
-			for (let i = start; i <= end; i++) {
-				output.push(i);
-			}
-		} else {
-			output.push(parseInt(value));
-		}
-	}
-
-	return output;
+	return parseRange(text);
 }
 
 export { parseFiles, parseMap };

@@ -1,0 +1,33 @@
+body {
+	margin: 16px;
+	background: #eee;
+}
+main {
+	display: grid;
+	grid-template-columns: auto 300px;
+}
+svg {
+	background: #ffffff;
+}
+
+line {
+	stroke: #000000;
+	stroke-width: 0.33;
+	stroke-linecap: round;
+}
+text {
+	font-family: 'Courier Prime Sans';
+	font-size: 2.4px;
+	font-weight: bold;
+	letter-spacing: 0.23px;
+}
+path {
+	stroke: #000000;
+	stroke-width: 1.1; /* approx */
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	fill: none;
+}
+circle {
+	fill: #000000;
+}

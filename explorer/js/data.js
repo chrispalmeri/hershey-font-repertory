@@ -3,7 +3,7 @@ import { thumbnail } from './render.js';
 
 let data = [];
 
-async function loadData(url) {
+async function loadFile(url) {
 	const file = await fetch(url);
 	const text = await file.text();
 
@@ -23,13 +23,22 @@ async function loadData(url) {
 	}
 }
 
+async function loadData(set) {
+	// if set === current set then just return data
+
+	data = [];
+
+	await loadFile('data/' + set + ' Metadata.csv');
+	await loadFile('data/' + set + ' Paths.csv');
+
+	return data;
+}
+
 async function showCsv(set) {
 	document.getElementById('groups').innerHTML = '';
 	document.getElementById('output').innerHTML = '';
-	data = [];
 
-	await loadData('data/' + set + ' Metadata.csv');
-	await loadData('data/' + set + ' Paths.csv');
+	await loadData(set);
 
 	// filter those with no Unicode info yet
 	//const filtered = data.filter(element => element['Unicode'] === '');
@@ -48,4 +57,4 @@ async function showCsv(set) {
 	}
 }
 
-export { showCsv };
+export { loadData, showCsv };
