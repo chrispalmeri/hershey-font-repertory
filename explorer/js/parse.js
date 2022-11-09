@@ -67,6 +67,7 @@ function getpath(chr) {
 				move = 'L';
 			} else if (move === 'L') {
 				part.path += `L${x}${y}`;
+				move = '';
 			} else {
 				if (x >= 0) x = ` ${x}`;
 				part.path += `${x}${y}`;
