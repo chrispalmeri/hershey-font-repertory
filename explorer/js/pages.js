@@ -26,34 +26,10 @@ should also do that on the libreoffice pdf at some point
 
 // theoretically you could make a whole pdf generator for all pages
 
+// 'NWL Oriental' would skip 295
+// page 14 kanji 2097 has spaces stripped intentionally
+
 /*
-examples:
-Part I:
-'Occidental', '1-42',							7, 6, 24, 28,  2, true,  true,  true
-'Occidental', '43-50 198-228 235',				7, 6, 24, 28,  2, true,  true,  false
-'Occidental', '501-520',						5, 4, 34, 42,  1, true,  true,  true
-'Occidental', '521-540',						5, 4, 34, 42,  1, true,  true,  false
-'Occidental', '541-560',						5, 4, 34, 42,  1, true,  true,  true
-'Occidental', '561-583',						5, 4, 34, 42,  1, true,  true,  false
-'Occidental', '601-620',						5, 4, 34, 42, -1, true,  true,  true
-'Occidental', '621-640',						5, 4, 34, 42, -1, true,  true,  false
-'Occidental', '641-660',						5, 4, 34, 42, -1, true,  true,  true
-'Occidental', '661-676 683-686',				5, 4, 34, 42, -1, true,  true,  false
-'Occidental', 'null 698-715',					5, 4, 34, 42,  1, true,  true,  true
-'Occidental', '716-728 735 745-746 741-744',	5, 4, 34, 42,  1, true,  true,  false
-'Occidental', '800-805',						3, 2, 56, 84,  2, true,  false, true
-'Occidental', '806-817',						4, 3, 42, 56,  2, false, false, false
-'Occidental', '819 822 824 818 823 825',		3, 2, 56, 84,  2, true,  false, true
-'Occidental', '830-834',						3, 2, 56, 84,  2, true,  false, false
-'Occidental', '840-857',						4, 4, 42, 42,  2, true,  false, true
-'Occidental', '860-868',						3, 3, 56, 56,  2, true,  false, false
-'Occidental', '870-905',						4, 3, 42, 56,  2, false, false, true
-'Occidental', '906-909',						2, 2, 84, 84,  0, true,  false, false
-
-Part II:
-'Occidental', '1001-1020',						5, 4, 34, 42,  1, true,  true,  true
-...like 30 pages the same except offset
-
 'Oriental', '1-62', 5, 4, 34, 42, 1, true, false, true
 */
 
@@ -113,7 +89,7 @@ async function makeSvg(group, glyphs, columns, rows, width, height, offset, bear
 	let styles = '';
 	let docRules = document.styleSheets[0].cssRules;
 	for (const rule of docRules) {
-		if (['body', 'main', 'svg'].indexOf(rule.selectorText) < 0) {
+		if (['body', 'main', '.shortcut', 'svg'].indexOf(rule.selectorText) < 0) {
 			styles += rule.cssText + ' ';
 		}
 	}
@@ -184,18 +160,10 @@ async function makeSvg(group, glyphs, columns, rows, width, height, offset, bear
 	return svg;
 }
 
-document.getElementById('generate').addEventListener('click', async function() {
-	let group = document.getElementById('group').value;
-	let glyphs = document.getElementById('glyphs').value;
-	let columns = parseInt(document.getElementById('columns').value);
-	let rows = parseInt(document.getElementById('rows').value);
-	let width = parseInt(document.getElementById('width').value);
-	let height = parseInt(document.getElementById('height').value);
-	let offset = parseInt(document.getElementById('offset').value);
-	let bearings = document.getElementById('bearings').checked;
-	let nearby = document.getElementById('nearby').checked;
-	let front = document.getElementById('front').checked;
 
+// you should make this update the controls
+
+async function showSvg(group, glyphs, columns, rows, width, height, offset, bearings, nearby, front) {
 	document.getElementById('svg').innerHTML = '';
 
 	let svg = await makeSvg(group, glyphs, columns, rows, width, height, offset, bearings, nearby, front);
@@ -208,4 +176,28 @@ document.getElementById('generate').addEventListener('click', async function() {
 	let download = document.getElementById('download');
 	download.setAttribute('href', 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(dldata));
 	download.setAttribute('download', 'NWL Page.svg');
+}
+
+document.getElementById('generate').addEventListener('click', function() {
+	let group = document.getElementById('group').value;
+	let glyphs = document.getElementById('glyphs').value;
+	let columns = parseInt(document.getElementById('columns').value);
+	let rows = parseInt(document.getElementById('rows').value);
+	let width = parseInt(document.getElementById('width').value);
+	let height = parseInt(document.getElementById('height').value);
+	let offset = parseInt(document.getElementById('offset').value);
+	let bearings = document.getElementById('bearings').checked;
+	let nearby = document.getElementById('nearby').checked;
+	let front = document.getElementById('front').checked;
+
+	showSvg(group, glyphs, columns, rows, width, height, offset, bearings, nearby, front);
+});
+
+const shortcuts = document.querySelectorAll('.shortcut');
+
+shortcuts.forEach((shortcut) => {
+	shortcut.addEventListener('click', function(e) {
+		const params = JSON.parse(e.target.dataset.params);
+		showSvg(...params);
+	});
 });

@@ -4,7 +4,11 @@ body {
 }
 main {
 	display: grid;
-	grid-template-columns: auto 300px;
+	grid-template-columns: auto 300px 300px;
+	gap: 16px;
+}
+.shortcut {
+	margin-bottom: 4px;
 }
 svg {
 	background: #ffffff;

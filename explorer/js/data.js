@@ -25,11 +25,19 @@ async function loadFile(url) {
 
 async function loadData(set) {
 	// if set === current set then just return data
+	if (!(set instanceof Array)) {
+		set = [set];
+	}
+
+	// should probably fail silently if file doesn't exist
+	// but will just create empty NWL Override Metadata.csv
 
 	data = [];
 
-	await loadFile('data/' + set + ' Metadata.csv');
-	await loadFile('data/' + set + ' Paths.csv');
+	for (const item of set) {
+		await loadFile('data/' + item + ' Metadata.csv');
+		await loadFile('data/' + item + ' Paths.csv');
+	}
 
 	return data;
 }
