@@ -16,3 +16,8 @@ Then run `node express.js` to start the server.
 Point your web browser to `http://localhost:3000/` to view it.
 
 Hit `Ctrl`+`C` to stop the server.
+
+## NWL Report Recreation
+
+You can use the same steps as above, but go to `http://localhost:3000/pages.html` for
+a page that generates SVG's of the Appendix B and C report pages.
