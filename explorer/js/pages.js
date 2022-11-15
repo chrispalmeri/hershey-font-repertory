@@ -20,6 +20,8 @@ should also do that on the libreoffice pdf at some point
 // optionally embed css font - should probably be in the css anyway if it is public
 // any point to making print media css?
 
+// use utilities.createSvgElement() in this file
+
 // NEEDED
 // NWL Overrides file + editor to populate it
 // Finish Oriental unicodes, verifying pronunciation
