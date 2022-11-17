@@ -119,6 +119,7 @@ document.getElementById('usenet').addEventListener('click', showOldGroups);
 
 document.getElementById('occsv').addEventListener('click', function() {
 	showCsv('Occidental');
+	//showCsv(['Occidental', 'Additional']);
 });
 document.getElementById('orcsv').addEventListener('click', function() {
 	showCsv('Oriental');
