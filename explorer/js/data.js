@@ -1,19 +1,21 @@
-import { parse } from './csv-parse/sync.js';
+import { parseCsv } from './csv.js';
 import { thumbnail } from './render.js';
 
 let data = [];
 
 async function loadFile(url) {
 	const file = await fetch(url);
+	if(file.status !== 200) {
+		return;
+	}
+
 	const text = await file.text();
 
-	const records = parse(text, {
-		columns: true
-	});
+	const records = parseCsv(text);
 
 	// merge into data
-	for (const record of records) {
-		const index = data.findIndex(element => element['Glyph Number'] === record['Glyph Number']);
+	for (const record of records.data) {
+		const index = data.findIndex(element => element[records.id] === record[records.id]);
 
 		if(index === -1) {
 			data.push(record);
