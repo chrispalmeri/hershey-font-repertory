@@ -1,5 +1,20 @@
 # hershey-font-repertory
 
+> Dr. Allen V. Hershey, a mathematical physicist at the U.S. Naval Weapons
+> Laboratory in Dahlgren, Virginia, carried out the digitization (by hand and
+> eye) of the characters illustrated in this publication. The successful
+> completion of such an ambitious undertaking as this, required a happy mixture
+> of art and science - of alphabets and algorithms, of calligraphy and
+> computing, and of psychology and printing. . . . He deserves our thanks, and
+> that of the readers as well, not only for having developed such a remarkably
+> useful and important system but also for the generosity with which he has
+> shared the fruits of his labor with others.
+>
+> &mdash;  Norman M. Wolcott and Joseph Hilsenrath, *A Contribution to Computer
+> Typesetting Techniques: Tables of Coordinates for Hershey's Repertory of
+> Occidental Type Fonts and Graphic Symbols*, NBS Special Publication 424
+> (April 1976) National Bureau of Standards, Washington, D.C.
+
 ## To run the explorer
 
 The explorer is a web interface for viewing the glyphs.  It can parse data from
