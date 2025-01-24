@@ -6,12 +6,19 @@
 	</head>
 	<body>
 		<div>
+			<h2>Navigation</h2>
+			<p>Glyph number</p>
+			<p>
+				<button id="prev">&lt;</button>
+				<input type="text" id="number">
+				<button id="next">&gt;</button>
+			</p>
 			<h2>Notes</h2>
 			<ul>
 				<li>click a path segment to show nodes</li>
 				<li>click and drag a node to move it</li>
 				<li>delete key will delete node or entire segment, depending on which is selected</li>
-				<li>background image should be 38:46 aspect ratio</li>
+				<li>background image should be 10 pixels per division</li>
 			</ul>
 			<p>You can't directly add nodes or segments. However, you can manually do that in the textarea.</p>
 			<h2>Background</h2>
@@ -19,12 +26,10 @@
 			<p><input type="checkbox" id="hide"> Hide background</p>
 		</div>
 
-		<svg viewBox="-18 -22 36 44">
-			<g id="bg">
-				<image x="-18" y="-22" width="36" height="44" href="img/occidental/2561.jpg"></image>
-			</g>
+		<svg id="svg" viewBox="-18 -22 36 44">
+			<g id="bg"></g>
 			<g id="grid"></g>
-			<g id="glyph" transform="translate(0 1)">
+			<g id="glyph">
 				<circle id="leftb" cx="-12" cy="0" r="0.55"></circle>
 				<circle id="rightb" cx="12" cy="0" r="0.55"></circle>
 			</g>
@@ -33,7 +38,9 @@
 		<div>
 			<h2>Layout</h2>
 			<p><table>
-				<tr><td width="20%">Offset:</td><td><input type="number" value="1" id="offset"></td></tr>
+				<tr><td width="20%">Width:</td><td><input type="number" step="2" id="width"></td></tr>
+				<tr><td>Height:</td><td><input type="number" step="2" id="height"></td></tr>
+				<tr><td>Offset:</td><td><input type="number" id="offset"></td></tr>
 			</table></p>
 			<h2>Glyph</h2>
 			<p><table>

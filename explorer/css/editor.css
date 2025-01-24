@@ -68,6 +68,12 @@ td:first-child {
 	padding: 4px 6px;
 	background: transparent;
 }
+input[type="text"] {
+	font: 14px monospace;
+	padding: 4px 6px;
+	border: 1px solid #999;
+	outline-offset: -1px;
+}
 input[type="number"], textarea {
 	font: 14px monospace;
 	box-sizing: border-box;
@@ -85,4 +91,10 @@ textarea {
 	border-width: 5px 6px;
 	border-style: solid;
 	border-color: #fff;
+}
+button {
+	padding: 3px 6px 4px;
+}
+input:focus, textarea:focus {
+	outline: 2px solid #1165ff;
 }

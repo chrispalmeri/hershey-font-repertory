@@ -1,7 +1,21 @@
 import { parsePath, serializePath, createSvgElement } from './utilities.js';
+import { loadData } from './data.js';
 
 /*
 TODO
+
+warning to save work
+local storage current navigation
+second pass to cleaup initial render
+	inital viewbox and bounds indicators still in html
+
+way to switch to oriental, or way to upload/download whole csv maybe?
+clear button, or some toggle between audit/create mode
+
+do you really still need offset field to be shown now?
+should the size inputs keep the +2 sizing, or no?
+
+config for line width
 
 button to change lines to untransparent black
 color multiply type things with image?
@@ -14,21 +28,16 @@ double click segment to add node - or whatever is easiest - shift drag to duplic
 
 allow mouse moving bearings just constrained to x only
 
-input where you can paste multiline groups
-and then next/prev buttons through them
-
 baselines
 node insert and segment split/join would be amazing
 copy button, maybe even tab separated values
 small svg preview
 
-repo images?
-load from csv?
-I don't know how needful that is, you have to manually enter into csv anyway
-
-allow changing layout size
-
 REFACTOR
+
+I think updateView() is unnecessary - well, now you added a needed state.dom update to it
+
+mixed onchange vs oninput - prob standardize on onchange
 
 consolidate moveref and selectednode
 
@@ -37,19 +46,26 @@ node selection/deleting was added pretty quickly
 	may want more granular render functions, segment handles vs segment vs path vs page
 
 state.move {seg, handle, data}
-initial global rendering into newfunction?
-get rid of default placeholder glyph/image?
 
 would be really cool to highlight nodes based on cursor position in textarea
 also maybe autocorrect if you accidentally put in odd number of points?
 syntax highlighting? - I think editable AND syntax highlighting is pretty complicated
 
+remove spaces in column names during csv parse, MAYBE parseInt's (check perf if so)
+
 */
 
-const glyph = {
-	left: '-12',
-	right: '12',
-	path: 'M-6-6L-7-7-7-9-5-11-2-12 0-12-3-1-5 5-6 7-7 8-9 9-11 9-12 8-12 6-11 5-10 6-11 7M0-12L-3-3-4 0-6 5-7 7-9 9M8-11L5-7 3-5 1-4-2-3M11-11L10-10 11-9 12-10 12-11 11-12 10-12 8-11 5-6 4-5 2-4-2-3M-2-3L1-2 2 0 3 7 4 9M-2-3L0-2 1 0 2 7 4 9 5 9 7 8 9 6'
+let alldata = await loadData('NWL Occidental');
+let pagedata = await loadData('NWL Page');
+
+// merge data
+// maybe you should do this individually as glyphs are selected?
+for (let i = 0; i < alldata.length; i += 1) {
+	const index = pagedata.findIndex(element => element['Page'] === alldata[i]['Page']);
+
+	if(index !== -1) {
+		Object.assign(alldata[i], pagedata[index]);
+	}
 }
 
 const state = {
@@ -72,7 +88,7 @@ const state = {
 		height: 0
 	},
 	selected: null,
-	offset: 1,
+	offset: -1,
 	selectedRef: null,
 	selectedId: null
 };
@@ -86,11 +102,21 @@ const grid = document.getElementById('grid');
 const ggp = document.getElementById('glyph');
 const leftb = document.getElementById('leftb');
 const rightb = document.getElementById('rightb');
+const pageNum = document.getElementById('number');
 
-document.getElementById('offset').value = state.offset;
-document.getElementById('left').value = glyph.left;
-document.getElementById('right').value = glyph.right;
-document.getElementById('out').value = glyph.path;
+let parsed = [];
+let currentIndex = 0;
+var imageSizer = new Image;
+
+imageSizer.addEventListener('load', function() {
+	let width = imageSizer.width / 10;
+	let height = imageSizer.height / 10;
+	let x = width * -1 / 2;
+	let y = height * -1 / 2;
+	bg.innerHTML = `<image x="${x}" y="${y}" width="${width}" height="${height}" href="${imageSizer.src}"></image>`;
+});
+
+document.getElementById('hide').checked = false; // to keep synced on page refresh
 
 
 // Functions
@@ -103,6 +129,9 @@ function updateView() {
 		width: parseInt(viewArr[2]),
 		height: parseInt(viewArr[3])
 	}
+
+	// so mouse still tracks after svg size changed
+	state.dom = svg.getBoundingClientRect();
 }
 
 function initialRender() {
@@ -133,53 +162,142 @@ function reRender(replacement) {
 	document.getElementById('out').value = serializePath(parsed);
 }
 
+function navChange(selectedGlyph) {
+	if (!selectedGlyph) {
+		return;
+	}
+
+	// Viewbox
+	let width = parseInt(selectedGlyph['Width']) + 2;
+	let height = parseInt(selectedGlyph['Height']) + 2;
+	let x = width * -1 / 2;
+	let y = height * -1 / 2;
+	document.getElementById('svg').setAttribute("viewBox", `${x} ${y} ${width} ${height}`);
+	updateView();
+
+	// Background image
+	imageSizer.src = `img/occidental/${selectedGlyph['Glyph Number'].padStart(4, '0')}.jpg`;
+
+	// Grid lines
+	// just made it cover everything in inital setup below
+
+	// Width and height
+	document.getElementById('width').value = selectedGlyph['Width'];
+	document.getElementById('height').value = selectedGlyph['Height'];
+
+	// Offset
+	let metaOffset = parseInt(selectedGlyph['Vertical Offset']);
+	state.offset = isNaN(metaOffset) ? -1 : metaOffset; // old default just in case
+	document.getElementById('offset').value = state.offset;
+	ggp.setAttribute('transform', `translate(0 ${state.offset * -1})`);
+
+	// Bearings
+	document.getElementById('left').value = selectedGlyph['Left Bearing'];
+	leftb.setAttribute('cx', selectedGlyph['Left Bearing']);
+
+	document.getElementById('right').value = selectedGlyph['Right Bearing'];
+	rightb.setAttribute('cx', selectedGlyph['Right Bearing']);
+
+	// Path segments
+	let copy = parsePath(selectedGlyph['SVG Path']);
+	reRender(copy); // will set field value also
+}
 
 // Initial render
 
 // Grid lines
-for (let x = -17; x <= 17; x += 1) {
+// you could nuke 'grid' innerHTML and make this a function to redraw
+// used to only draw it to actual height/width (-1 fron viewbox)
+// for now just made it big enough to cover everything (84x84)
+for (let x = -43; x <= 43; x += 1) {
 	createSvgElement('line', {
 		x1: x,
-		y1: -21,
+		y1: -43,
 		x2: x,
-		y2: 21,
+		y2: 43,
 		parent: grid
 	});
 }
 
-for (let y = -21; y <= 21; y += 1) {
+for (let y = -43; y <= 43; y += 1) {
 	createSvgElement('line', {
-		x1: -17,
+		x1: -43,
 		y1: y,
-		x2: 17,
+		x2: 43,
 		y2: y,
 		parent: grid
 	});
 }
 
-// Bearings
-leftb.setAttribute('cx', glyph.left);
-rightb.setAttribute('cx', glyph.right);
-
 // Path segments
-let parsed = parsePath(glyph.path);
-initialRender();
+pageNum.value = alldata[currentIndex]['Glyph Number'];
+navChange(alldata[0]);
 
 // Mouse prep
 state.dom = svg.getBoundingClientRect();
-updateView();
 
 
 // Input changes
+
+// Navigation number input
+pageNum.addEventListener("change", function(e) {
+	let gi = alldata.findIndex(element => element['Glyph Number'] === e.target.value);
+	if (gi > -1) {
+		currentIndex = gi;
+		navChange(alldata[currentIndex]);
+	} else {
+		// figure out the valid glyph that is directionaly closest
+		let last = alldata[currentIndex]['Glyph Number'];
+		let desired = parseInt(e.target.value) || 0;
+
+		// start high cause findIndex returns first match
+		let highIndex = alldata.findIndex(element => parseInt(element['Glyph Number']) > desired);
+		if (highIndex === -1) {
+			highIndex = alldata.length - 1;
+		}
+
+		if (desired > last) {
+			currentIndex = highIndex;
+		} else {
+			let lowIndex = highIndex - 1;
+			if (lowIndex < 0) {
+				lowIndex = 0;
+			}
+			currentIndex = lowIndex;
+		}
+
+		pageNum.value = alldata[currentIndex]['Glyph Number'];
+		navChange(alldata[currentIndex]);
+	}
+});
+
+// Navigation previous
+document.getElementById('prev').addEventListener("click", function(e) {
+	currentIndex -= 1;
+	if (currentIndex < 0) {
+		currentIndex = 0;
+	}
+	pageNum.value = alldata[currentIndex]['Glyph Number'];
+	navChange(alldata[currentIndex]);
+
+});
+
+// Navigation next
+document.getElementById('next').addEventListener("click", function(e) {
+	currentIndex += 1;
+	if (currentIndex > alldata.length - 1) {
+		currentIndex = alldata.length - 1;
+	}
+	pageNum.value = alldata[currentIndex]['Glyph Number'];
+	navChange(alldata[currentIndex]);
+});
 
 // Background image
 document.getElementById('upload').addEventListener('change', function(e) {
 	var reader = new FileReader();
 
 	reader.addEventListener('load', function(event) {
-		var imageData = event.target.result;
-
-		bg.innerHTML = `<image x="-19" y="-23" width="38" height="46" href="${imageData}"></image>`;
+		imageSizer.src = event.target.result;
 	});
 
 	reader.readAsDataURL(e.target.files[0]);
@@ -193,11 +311,30 @@ document.getElementById('hide').addEventListener('change', function(e) {
 	}
 });
 
+// Width and height
+document.getElementById('width').addEventListener('change', function(e) {
+	if(e.target.value.length > 0) {
+		let width = parseInt(e.target.value) + 2;
+		let x = width * -1 / 2;
+		document.getElementById('svg').setAttribute("viewBox", `${x} ${state.view.y} ${width} ${state.view.height}`);
+		updateView();
+	}
+});
+
+document.getElementById('height').addEventListener('change', function(e) {
+	if(e.target.value.length > 0) {
+		let height = parseInt(e.target.value) + 2;
+		let y = height * -1 / 2;
+		document.getElementById('svg').setAttribute("viewBox", `${state.view.x} ${y} ${state.view.width} ${height}`);
+		updateView();
+	}
+});
+
 // Offset
 document.getElementById('offset').addEventListener('input', function(e) {
 	if(e.target.value.length > 0) {
 		state.offset = parseInt(e.target.value);
-		ggp.setAttribute('transform', `translate(0 ${state.offset})`);
+		ggp.setAttribute('transform', `translate(0 ${state.offset * -1})`);
 	}
 });
 
@@ -228,7 +365,7 @@ svg.addEventListener('mousemove', function(e) {
 	if(!state.moveHandleRef) return;
 
 	let x = Math.round((e.x - state.dom.x) * state.view.width / state.dom.width + state.view.x);
-	let y = Math.round((e.y - state.dom.y) * state.view.height / state.dom.height + state.view.y - state.offset);
+	let y = Math.round((e.y - state.dom.y) * state.view.height / state.dom.height + state.view.y + state.offset);
 
 	// check if x,y changed since last mouse move
 	// to not spam render
