@@ -21,21 +21,20 @@ line {
 	stroke: currentColor;
 	stroke-width: 0.02;
 }
-path {
-	fill: none;
-	stroke: #ff4229;
+#glyph g {
+	color: #ff4229;
+	opacity: 0.5;
+}
+#glyph line {
 	stroke-width: 1.1;
 	stroke-linecap: round;
-	stroke-linejoin: round;
-	opacity: 0.5;
 }
 circle {
 	fill: #5297ff;
 	opacity: 0.5;
 }
-.selected path {
-	stroke: #00c21a;
-	stroke: #5297ff;
+#glyph .selected {
+	color: #5297ff;
 }
 .handle {
 	fill: rgba(0, 0, 0, 0.01);

@@ -20,20 +20,29 @@ config for line width
 button to change lines to untransparent black
 color multiply type things with image?
 
-split button shouldn't be too hard - once you have selected node
-
-double click segment to add node - or whatever is easiest - shift drag to duplicate?
-	shift drag together to delete one?
-	or even autodelete sequential, identical nodes
+autodelete sequential, overlapping, identical nodes?
+could then drag one onto neighbor to delete
 
 allow mouse moving bearings just constrained to x only
 
 baselines
-node insert and segment split/join would be amazing
 copy button, maybe even tab separated values
 small svg preview
 
+deleting nodes one at a time til one/none are left is weird
+well, so is deleting all paths til none are left, then you are stuck
+but why would anyone do either of those?
+
+sometimes after moving node, segment becomes unselected
+suspect its when mousedown and mouseup targets don't match it reports click target as svg
+see :558 but not sure why it does that, can test by removing handle transform
+
 REFACTOR
+
+1. refactor deleteNode()
+
+transforming both #glyph and #handles, group them maybe?
+handles is seperate layer cause of segment opacity
 
 I think updateView() is unnecessary - well, now you added a needed state.dom update to it
 
@@ -103,6 +112,7 @@ const ggp = document.getElementById('glyph');
 const leftb = document.getElementById('leftb');
 const rightb = document.getElementById('rightb');
 const pageNum = document.getElementById('number');
+const handles = document.getElementById('handles');
 
 let parsed = [];
 let currentIndex = 0;
@@ -141,22 +151,33 @@ function initialRender() {
 			id: 'grp' + seg,
 			parent: ggp
 		});
-		createSvgElement('path', {
-			id: 'seg' + seg,
-			d: serializePath([segment]),
-			parent: g
-		});
+
+		for (let i = 0; i < segment.length - 1; i += 1) {
+			let x1 = segment[i][0];
+			let y1 = segment[i][1];
+			let x2 = segment[i + 1][0];
+			let y2 = segment[i + 1][1];
+
+			createSvgElement('line', {
+				id: `s${seg}l${i}`,
+				x1: x1,
+				y1: y1,
+				x2: x2,
+				y2: y2,
+				parent: g
+			});
+		}
 	}
 }
 
 function reRender(replacement) {
+	unrenderSelected();
+
 	for (let seg = 0; seg < parsed.length; seg += 1) {
 		document.getElementById(`grp${seg}`).remove();
 	}
 
 	parsed = replacement;
-	state.selected = null;
-
 	initialRender();
 
 	document.getElementById('out').value = serializePath(parsed);
@@ -190,6 +211,7 @@ function navChange(selectedGlyph) {
 	state.offset = isNaN(metaOffset) ? -1 : metaOffset; // old default just in case
 	document.getElementById('offset').value = state.offset;
 	ggp.setAttribute('transform', `translate(0 ${state.offset * -1})`);
+	handles.setAttribute('transform', `translate(0 ${state.offset * -1})`);
 
 	// Bearings
 	document.getElementById('left').value = selectedGlyph['Left Bearing'];
@@ -335,6 +357,7 @@ document.getElementById('offset').addEventListener('input', function(e) {
 	if(e.target.value.length > 0) {
 		state.offset = parseInt(e.target.value);
 		ggp.setAttribute('transform', `translate(0 ${state.offset * -1})`);
+		handles.setAttribute('transform', `translate(0 ${state.offset * -1})`);
 	}
 });
 
@@ -380,8 +403,21 @@ svg.addEventListener('mousemove', function(e) {
 
 		let segment = parsed[state.selected];
 
-		let elem = document.getElementById(`seg${state.selected}`);
-		elem.setAttribute('d', serializePath([segment]));
+		// update the connected lines, just the changed ends
+		if (state.selectedId > 0) {
+			// update preceding line
+			let i = state.selectedId - 1;
+			let elem = document.getElementById(`s${state.selected}l${i}`);
+			elem.setAttribute('x2', segment[i + 1][0]);
+			elem.setAttribute('y2', segment[i + 1][1]);
+		}
+		if (state.selectedId < segment.length - 1) {
+			// update following line
+			let i = state.selectedId;
+			let elem = document.getElementById(`s${state.selected}l${i}`);
+			elem.setAttribute('x1', segment[i][0]);
+			elem.setAttribute('y1', segment[i][1]);
+		}
 
 		document.getElementById('out').value = serializePath(parsed);
 	}
@@ -416,7 +452,7 @@ function renderSelected() {
 			cx: x,
 			cy: y,
 			r: 0.5,
-			parent: group
+			parent: handles
 		});
 
 		// move it to the top
@@ -437,8 +473,11 @@ function unrenderSelected() {
 		let group = document.getElementById(`grp${state.selected}`);
 		group.classList.remove('selected');
 
-		// i think this is just to remove the handles
-		group.innerHTML = `<path id="seg${state.selected}" d="${serializePath([segment])}"></path>`;
+		// loop remove
+		for (let i = 0; i < segment.length; i += 1) {
+			let oldNode = document.getElementById(`node${i}`);
+			if (oldNode) oldNode.remove();
+		}
 
 		state.selected = null;
 	}
@@ -461,24 +500,58 @@ function deselectNode() {
 	}
 }
 
-function deleteNode() {
+function deleteNode(really = true) {
+	// you need to fully rerender otherwise dom id's don't match array anymore
+	// for both lines and handles
+	// probably should break out functions, only one line does deletion
+	// reusing this for adding nodes also
+	// also, can maybe move delete from middle to top since error checking?
+	// and make nuke loops go +1 always?
+
+	// nuke all the lines
+	let segment = parsed[state.selected];
+	for (let i = 0; i < segment.length - 1; i += 1) {
+		let oldLine = document.getElementById(`s${state.selected}l${i}`);
+		if (oldLine) oldLine.remove();
+	}
+
+	// nuke all the handles
 	let temp = parseInt(state.selected); // just to copy cause unrenderSelected will nuke it
-	parsed[state.selected].splice(state.selectedId, 1);
-	deselectNode();
-	unrenderSelected();
+	unrenderSelected(); // before delete node otherwise it misses last node
 	state.selected = temp;
+
+	// delete the node
+	if (really) {
+		parsed[state.selected].splice(state.selectedId, 1);
+		deselectNode();
+	}
+
+	// rerender lines
+	segment = parsed[state.selected];
+	let g = document.getElementById(`grp${state.selected}`);
+	for (let i = 0; i < segment.length - 1; i += 1) {
+		createSvgElement('line', {
+			id: `s${state.selected}l${i}`,
+			x1: segment[i][0],
+			y1: segment[i][1],
+			x2: segment[i + 1][0],
+			y2: segment[i + 1][1],
+			parent: g // what is this
+		});
+	}
+
+	// rerender handles
 	renderSelected();
 
-	// just cause don't NEED to fully rerender
 	document.getElementById('out').value = serializePath(parsed);
 }
 
 // inconsistent, blanket deselecting node, targeted deselecting path
 svg.addEventListener('click', function(e) {
-	if(e.target.nodeName === 'path') {
+	if(e.target.nodeName === 'line') {
 		deselectNode();
 
-		const clicked = parseInt(e.target.id.replace('seg', ''));
+		const clicked = parseInt(e.target.parentNode.id.replace('grp', ''));
 		if(clicked !== state.selected) {
 			unrenderSelected();
 
@@ -503,5 +576,21 @@ document.addEventListener('keydown', function(e) {
 			copy.splice(state.selected, 1);
 			reRender(copy);
 		}
+	}
+});
+
+svg.addEventListener('dblclick', function(e) {
+	if(e.target.nodeName === 'line') {
+		// deselecting, checking selected, etc doesn't matter
+		// cause it gets selected on first click anyway
+		let segment = parsed[state.selected];
+
+		let x = Math.round((e.x - state.dom.x) * state.view.width / state.dom.width + state.view.x);
+		let y = Math.round((e.y - state.dom.y) * state.view.height / state.dom.height + state.view.y + state.offset);
+
+		let line = parseInt(e.target.id.replace(`s${state.selected}l`, ''));
+
+		segment.splice(line + 1, 0, [x, y]);
+		deleteNode(false); // hacked to basically just re-render lines and handles
 	}
 });

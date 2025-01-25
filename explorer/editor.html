@@ -7,21 +7,19 @@
 	<body>
 		<div>
 			<h2>Navigation</h2>
-			<p>Glyph number</p>
+			<p>Glyph number:</p>
 			<p>
 				<button id="prev">&lt;</button>
 				<input type="text" id="number">
 				<button id="next">&gt;</button>
 			</p>
-			<h2>Notes</h2>
-			<ul>
-				<li>click a path segment to show nodes</li>
-				<li>click and drag a node to move it</li>
-				<li>delete key will delete node or entire segment, depending on which is selected</li>
-				<li>background image should be 10 pixels per division</li>
-			</ul>
-			<p>You can't directly add nodes or segments. However, you can manually do that in the textarea.</p>
+			<h2>Editing</h2>
+			<p>Click a path segment to show its nodes. Then click and drag a node to move it.</p>
+			<p>Your delete key will delete a node or an entire segment, depending on which is selected.</p>
+			<p>Double click on a selected line segment to add a node.</p>
+			<p>There isn't a convenient way to add new segments. You would have to add them in the Path textarea as SVG commands.</p>
 			<h2>Background</h2>
+			<p>Image should be straightened and sized 10 pixels per unit, with a 1 unit margin.</p>
 			<p><input type="file" id="upload" /></p>
 			<p><input type="checkbox" id="hide"> Hide background</p>
 		</div>
@@ -33,6 +31,7 @@
 				<circle id="leftb" cx="-12" cy="0" r="0.55"></circle>
 				<circle id="rightb" cx="12" cy="0" r="0.55"></circle>
 			</g>
+			<g id="handles"></g>
 		</svg>
 
 		<div>
