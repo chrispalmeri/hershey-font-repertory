@@ -7,6 +7,7 @@
 	<body>
 		<div>
 			<h2>Navigation</h2>
+			<p>Navigating away will discard any unsaved changes to the current glyph.</p>
 			<p>Glyph number:</p>
 			<p>
 				<button id="prev">&lt;</button>
@@ -47,6 +48,16 @@
 				<tr><td>Right:</td><td><input type="number" id="right"></td></tr>
 				<tr><td>Path:</td><td><textarea id="out"></textarea></td></tr>
 			</table></p>
+			<p>Save changes to this glyph temporarily, for export later.</p>
+			<p>
+				<button id="save">Save</button>
+				<button id="revert">Revert</button>
+			</p>
+			<h2>Export</h2>
+			<p>Download the full CSV file with your changes incorporated.</p>
+			<p>
+				<button id="export">Download</button>
+			</p>
 		</div>
 	</body>
 </html>

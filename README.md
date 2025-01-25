@@ -31,8 +31,7 @@ process of being compiled.
 ## Glyph editor
 
 You can use the same steps as above, but go to `http://localhost:3000/editor.html` for
-a glyph editor. You will have to manually copy and paste individual paths out
-of the editor to save them.
+a glyph editor.
 
 ## NWL report recreation
 

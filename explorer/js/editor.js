@@ -1,5 +1,6 @@
 import { parsePath, serializePath, createSvgElement } from './utilities.js';
 import { loadData } from './data.js';
+import { serializeCSV } from './csv.js';
 
 /*
 TODO
@@ -67,6 +68,16 @@ remove spaces in column names during csv parse, MAYBE parseInt's (check perf if 
 let alldata = await loadData('NWL Occidental');
 let pagedata = await loadData('NWL Page');
 
+// copy for local changes
+const localData = alldata.map(function(x) {
+	return {
+		'Glyph Number': x['Glyph Number'],
+		'Left Bearing': x['Left Bearing'],
+		'Right Bearing': x['Right Bearing'],
+		'SVG Path': x['SVG Path']
+	}
+});
+
 // merge data
 // maybe you should do this individually as glyphs are selected?
 for (let i = 0; i < alldata.length; i += 1) {
@@ -116,7 +127,7 @@ const handles = document.getElementById('handles');
 
 let parsed = [];
 let currentIndex = 0;
-var imageSizer = new Image;
+var imageSizer = document.createElement('img');
 
 imageSizer.addEventListener('load', function() {
 	let width = imageSizer.width / 10;
@@ -183,7 +194,7 @@ function reRender(replacement) {
 	document.getElementById('out').value = serializePath(parsed);
 }
 
-function navChange(selectedGlyph) {
+function navChange(selectedGlyph, really = false) {
 	if (!selectedGlyph) {
 		return;
 	}
@@ -212,6 +223,12 @@ function navChange(selectedGlyph) {
 	document.getElementById('offset').value = state.offset;
 	ggp.setAttribute('transform', `translate(0 ${state.offset * -1})`);
 	handles.setAttribute('transform', `translate(0 ${state.offset * -1})`);
+
+	// THIS IS A HACK
+	// added feature to save to localData, now want it to reflect when navigating
+	if (!really) {
+		selectedGlyph = localData[currentIndex];
+	}
 
 	// Bearings
 	document.getElementById('left').value = selectedGlyph['Left Bearing'];
@@ -381,6 +398,30 @@ window.addEventListener('resize', function() {
 	state.dom = svg.getBoundingClientRect();
 });
 
+// Save
+document.getElementById('save').addEventListener('click', function(e) {
+	localData[currentIndex]['Left Bearing'] = document.getElementById('left').value;
+	localData[currentIndex]['Right Bearing'] = document.getElementById('right').value;
+	localData[currentIndex]['SVG Path'] = document.getElementById('out').value;
+});
+
+document.getElementById('revert').addEventListener('click', function(e) {
+	navChange(alldata[currentIndex], true);
+	// I guess also save it?
+	// usually you would use revert to discard unsaved changes
+	// but if you were trying to discard saved changes it felt weird to have to click save again
+	localData[currentIndex]['Left Bearing'] = document.getElementById('left').value;
+	localData[currentIndex]['Right Bearing'] = document.getElementById('right').value;
+	localData[currentIndex]['SVG Path'] = document.getElementById('out').value;
+});
+
+document.getElementById('export').addEventListener('click', function(e) {
+	const data = serializeCSV(localData);
+	const link = document.createElement('a');
+	link.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(data));
+	link.setAttribute('download', 'hershey_custom.csv');
+	link.click();
+});
 
 // MOUSE STUFF
 
@@ -566,16 +607,40 @@ svg.addEventListener('click', function(e) {
 	}
 });
 
-// Delete segment
+// Keyboard handling
 document.addEventListener('keydown', function(e) {
-	if (e.key === 'Delete' && ['input', 'textarea'].indexOf(e.target.localName) === -1) {
-		if (state.selectedId !== null) {
-			deleteNode();
-		} else if (state.selected !== null) {
-			let copy = parsed.slice();
-			copy.splice(state.selected, 1);
-			reRender(copy);
-		}
+	if(['input', 'textarea'].indexOf(e.target.localName) >= 0) {
+		return;
+	}
+
+	switch(e.key) {
+		case 'Delete':
+			// Delete segment
+			if (state.selectedId !== null) {
+				deleteNode();
+			} else if (state.selected !== null) {
+				let copy = parsed.slice();
+				copy.splice(state.selected, 1);
+				reRender(copy);
+			}
+			break;
+		case 'Enter':
+			// Save and navigate next
+			// (straight copied from input handlers far above)
+
+			// Save
+			localData[currentIndex]['Left Bearing'] = document.getElementById('left').value;
+			localData[currentIndex]['Right Bearing'] = document.getElementById('right').value;
+			localData[currentIndex]['SVG Path'] = document.getElementById('out').value;
+
+			// Navigation next
+			currentIndex += 1;
+			if (currentIndex > alldata.length - 1) {
+				currentIndex = alldata.length - 1;
+			}
+			pageNum.value = alldata[currentIndex]['Glyph Number'];
+			navChange(alldata[currentIndex]);
+			break;
 	}
 });
 

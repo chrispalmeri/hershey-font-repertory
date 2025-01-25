@@ -61,4 +61,32 @@ function parseCsv(text) {
 	};
 }
 
-export { parseCsv };
+function serializeCSV(array) {
+	// this will not have any escaped characters in it
+	// [{ "Glyph Number": "1", "Left Bearing": "-5", "Right Bearing": "5", "SVG Path": "M0-5L-4 4M0-5L4 4M-2 1L2 1" }]
+
+	let output = '';
+
+	// get headers from first element
+	// will enforce value ordering later, although I doubt it matters
+	let headers = Object.keys(array[0]);
+	output += headers.join(',') + '\n';
+
+	for (let i = 0; i < array.length; i += 1) {
+		// output += Object.values(array[i]).join(',') + '\n'; // unforced ordering
+
+		for (let j = 0; j < headers.length; j += 1) {
+			output += array[i][headers[j]];
+
+			if (j === headers.length - 1) {
+				output += '\n';
+			} else {
+				output += ',';
+			}
+		}
+	}
+
+	return output;
+}
+
+export { parseCsv, serializeCSV };
