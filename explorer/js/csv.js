@@ -70,16 +70,16 @@ function serializeCSV(array) {
 	// get headers from first element
 	// will enforce value ordering later, although I doubt it matters
 	let headers = Object.keys(array[0]);
-	output += headers.join(',') + '\n';
+	output += headers.join(',') + '\r\n';
 
 	for (let i = 0; i < array.length; i += 1) {
-		// output += Object.values(array[i]).join(',') + '\n'; // unforced ordering
+		// output += Object.values(array[i]).join(',') + '\r\n'; // unforced ordering
 
 		for (let j = 0; j < headers.length; j += 1) {
 			output += array[i][headers[j]];
 
 			if (j === headers.length - 1) {
-				output += '\n';
+				output += '\r\n';
 			} else {
 				output += ',';
 			}

@@ -419,7 +419,7 @@ document.getElementById('export').addEventListener('click', function(e) {
 	const data = serializeCSV(localData);
 	const link = document.createElement('a');
 	link.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(data));
-	link.setAttribute('download', 'hershey_custom.csv');
+	link.setAttribute('download', 'NWL Occidental Paths.csv');
 	link.click();
 });
 
@@ -589,11 +589,15 @@ function deleteNode(really = true) {
 
 // inconsistent, blanket deselecting node, targeted deselecting path
 svg.addEventListener('click', function(e) {
-	if(e.target.nodeName === 'line') {
+	// check either e.target.id !== ''
+	// or e.target.parentNode.id !== 'grid'
+	// to make sure it is not a grid line that you clicked on
+	if(e.target.nodeName === 'line' && e.target.id) {
 		deselectNode();
 
 		const clicked = parseInt(e.target.parentNode.id.replace('grp', ''));
-		if(clicked !== state.selected) {
+		// double check not NaN, but grid fix above should handle it
+		if(clicked !== state.selected && !isNaN(clicked)) {
 			unrenderSelected();
 
 			state.selected = clicked;
