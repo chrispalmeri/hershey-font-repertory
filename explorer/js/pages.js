@@ -24,7 +24,6 @@ should also do that on the libreoffice pdf at some point
 
 // NEEDED
 // NWL Overrides file + editor to populate it
-// Finish Oriental unicodes, verifying pronunciation
 
 // theoretically you could make a whole pdf generator for all pages
 
