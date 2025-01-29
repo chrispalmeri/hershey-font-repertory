@@ -1,10 +1,10 @@
 function parseRange(text) {
 	const output = [];
 
-	const matches = text.matchAll(/\S+/g);
+	const matches = text.split(',');
 
 	for (const match of matches) {
-		const value = match[0];
+		const value = match.trim();
 
 		if (/-/.test(value)) {
 			const bounds = value.split('-');
@@ -13,7 +13,7 @@ function parseRange(text) {
 			for (let i = start; i <= end; i++) {
 				output.push(i);
 			}
-		} else if (value === 'null') {
+		} else if (value === '') {
 			output.push(null);
 		} else {
 			output.push(parseInt(value));

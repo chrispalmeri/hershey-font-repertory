@@ -1,6 +1,7 @@
 import { parsePath, serializePath, createSvgElement } from './utilities.js';
 import { loadData } from './data.js';
 import { serializeCSV } from './csv.js';
+import { pagerSetup, pagerNext } from './pager.js';
 
 /*
 TODO
@@ -108,7 +109,7 @@ const state = {
 		height: 0
 	},
 	selected: null,
-	offset: -1,
+	offset: 1,
 	selectedRef: null,
 	selectedId: null
 };
@@ -122,7 +123,6 @@ const grid = document.getElementById('grid');
 const ggp = document.getElementById('glyph');
 const leftb = document.getElementById('leftb');
 const rightb = document.getElementById('rightb');
-const pageNum = document.getElementById('number');
 const handles = document.getElementById('handles');
 
 let parsed = [];
@@ -219,10 +219,10 @@ function navChange(selectedGlyph, really = false) {
 
 	// Offset
 	let metaOffset = parseInt(selectedGlyph['Vertical Offset']);
-	state.offset = isNaN(metaOffset) ? -1 : metaOffset; // old default just in case
+	state.offset = isNaN(metaOffset) ? 1 : metaOffset; // old default just in case
 	document.getElementById('offset').value = state.offset;
-	ggp.setAttribute('transform', `translate(0 ${state.offset * -1})`);
-	handles.setAttribute('transform', `translate(0 ${state.offset * -1})`);
+	ggp.setAttribute('transform', `translate(0 ${state.offset})`);
+	handles.setAttribute('transform', `translate(0 ${state.offset})`);
 
 	// THIS IS A HACK
 	// added feature to save to localData, now want it to reflect when navigating
@@ -269,67 +269,24 @@ for (let y = -43; y <= 43; y += 1) {
 }
 
 // Path segments
-pageNum.value = alldata[currentIndex]['Glyph Number'];
-navChange(alldata[0]);
+
+// currentIndex referenced in save, revert, ENTER, and one place in navChange
+pagerSetup(
+	document.getElementById('number'),
+	document.getElementById('prev'),
+	document.getElementById('next'),
+	alldata.map(x => x['Glyph Number']),
+	function(index) {
+		currentIndex = index; // has more references than you thought
+		navChange(alldata[index]);
+	}
+);
 
 // Mouse prep
 state.dom = svg.getBoundingClientRect();
 
 
 // Input changes
-
-// Navigation number input
-pageNum.addEventListener("change", function(e) {
-	let gi = alldata.findIndex(element => element['Glyph Number'] === e.target.value);
-	if (gi > -1) {
-		currentIndex = gi;
-		navChange(alldata[currentIndex]);
-	} else {
-		// figure out the valid glyph that is directionaly closest
-		let last = alldata[currentIndex]['Glyph Number'];
-		let desired = parseInt(e.target.value) || 0;
-
-		// start high cause findIndex returns first match
-		let highIndex = alldata.findIndex(element => parseInt(element['Glyph Number']) > desired);
-		if (highIndex === -1) {
-			highIndex = alldata.length - 1;
-		}
-
-		if (desired > last) {
-			currentIndex = highIndex;
-		} else {
-			let lowIndex = highIndex - 1;
-			if (lowIndex < 0) {
-				lowIndex = 0;
-			}
-			currentIndex = lowIndex;
-		}
-
-		pageNum.value = alldata[currentIndex]['Glyph Number'];
-		navChange(alldata[currentIndex]);
-	}
-});
-
-// Navigation previous
-document.getElementById('prev').addEventListener("click", function(e) {
-	currentIndex -= 1;
-	if (currentIndex < 0) {
-		currentIndex = 0;
-	}
-	pageNum.value = alldata[currentIndex]['Glyph Number'];
-	navChange(alldata[currentIndex]);
-
-});
-
-// Navigation next
-document.getElementById('next').addEventListener("click", function(e) {
-	currentIndex += 1;
-	if (currentIndex > alldata.length - 1) {
-		currentIndex = alldata.length - 1;
-	}
-	pageNum.value = alldata[currentIndex]['Glyph Number'];
-	navChange(alldata[currentIndex]);
-});
 
 // Background image
 document.getElementById('upload').addEventListener('change', function(e) {
@@ -373,8 +330,8 @@ document.getElementById('height').addEventListener('change', function(e) {
 document.getElementById('offset').addEventListener('input', function(e) {
 	if(e.target.value.length > 0) {
 		state.offset = parseInt(e.target.value);
-		ggp.setAttribute('transform', `translate(0 ${state.offset * -1})`);
-		handles.setAttribute('transform', `translate(0 ${state.offset * -1})`);
+		ggp.setAttribute('transform', `translate(0 ${state.offset})`);
+		handles.setAttribute('transform', `translate(0 ${state.offset})`);
 	}
 });
 
@@ -429,7 +386,7 @@ svg.addEventListener('mousemove', function(e) {
 	if(!state.moveHandleRef) return;
 
 	let x = Math.round((e.x - state.dom.x) * state.view.width / state.dom.width + state.view.x);
-	let y = Math.round((e.y - state.dom.y) * state.view.height / state.dom.height + state.view.y + state.offset);
+	let y = Math.round((e.y - state.dom.y) * state.view.height / state.dom.height + state.view.y - state.offset);
 
 	// check if x,y changed since last mouse move
 	// to not spam render
@@ -629,21 +586,13 @@ document.addEventListener('keydown', function(e) {
 			}
 			break;
 		case 'Enter':
-			// Save and navigate next
-			// (straight copied from input handlers far above)
-
-			// Save
+			// Save (duplicated in input handlers far above)
 			localData[currentIndex]['Left Bearing'] = document.getElementById('left').value;
 			localData[currentIndex]['Right Bearing'] = document.getElementById('right').value;
 			localData[currentIndex]['SVG Path'] = document.getElementById('out').value;
 
-			// Navigation next
-			currentIndex += 1;
-			if (currentIndex > alldata.length - 1) {
-				currentIndex = alldata.length - 1;
-			}
-			pageNum.value = alldata[currentIndex]['Glyph Number'];
-			navChange(alldata[currentIndex]);
+			// Navigate
+			pagerNext();
 			break;
 	}
 });
@@ -655,7 +604,7 @@ svg.addEventListener('dblclick', function(e) {
 		let segment = parsed[state.selected];
 
 		let x = Math.round((e.x - state.dom.x) * state.view.width / state.dom.width + state.view.x);
-		let y = Math.round((e.y - state.dom.y) * state.view.height / state.dom.height + state.view.y + state.offset);
+		let y = Math.round((e.y - state.dom.y) * state.view.height / state.dom.height + state.view.y - state.offset);
 
 		let line = parseInt(e.target.id.replace(`s${state.selected}l`, ''));
 

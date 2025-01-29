@@ -14,10 +14,64 @@ svg {
  	background: #fff;
 	border-radius: 4px;
 }
+.shortcut {
+	margin-bottom: 4px;
+}
+table {
+	border-collapse: collapse;
+	box-sizing: border-box;
+	width: 100%;
+}
+td {
+	padding: 0;
+	border: 1px solid #999;
+	background: #fff;
+}
+td:first-child {
+	width: 80px;
+	vertical-align: top;
+	padding: 4px 6px;
+	background: transparent;
+}
+input:not([type=file]) {
+	font: 14px monospace;
+	padding: 4px 6px;
+	border: 1px solid #999;
+	outline-offset: -1px;
+}
+td input:not([type=checkbox]), textarea, select {
+	font: 14px monospace;
+	box-sizing: border-box;
+	width: 100%;
+	display: block;
+	border: none;
+	margin: 0;
+	padding: 5px 6px;
+	background: #fff;
+}
+textarea {
+	height: 150px;
+	padding: 0;
+	border-width: 5px 6px;
+	border-style: solid;
+	border-color: #fff;
+}
+td input[type=checkbox] {
+	margin-left: 6px;
+}
+button {
+	padding: 3px 6px 4px;
+}
+input:focus, textarea:focus {
+	outline: 2px solid #1165ff;
+}
+
+/* editor stuff */
+
 #grid {
 	color: #5297ff;
 }
-line {
+#grid line {
 	stroke: currentColor;
 	stroke-width: 0.02;
 }
@@ -26,10 +80,11 @@ line {
 	opacity: 0.5;
 }
 #glyph line {
+	stroke: currentColor;
 	stroke-width: 1.1;
 	stroke-linecap: round;
 }
-circle {
+#glyph circle {
 	fill: #5297ff;
 	opacity: 0.5;
 }
@@ -50,50 +105,4 @@ circle {
 }
 circle.selected {
 	fill: rgba(82, 151, 255, 0.7);
-}
-
-table {
-	border-collapse: collapse;
-	box-sizing: border-box;
-	width: 100%;
-}
-td {
-	padding: 0;
-	border: 1px solid #999;
-	background: #fff;
-}
-td:first-child {
-	vertical-align: top;
-	padding: 4px 6px;
-	background: transparent;
-}
-input[type="text"] {
-	font: 14px monospace;
-	padding: 4px 6px;
-	border: 1px solid #999;
-	outline-offset: -1px;
-}
-input[type="number"], textarea {
-	font: 14px monospace;
-	box-sizing: border-box;
-	width: 100%;
-	display: block;
-	border: none;
-	margin: 0;
-}
-input[type="number"] {
-	padding: 5px 6px;
-}
-textarea {
-	height: 150px;
-	padding: 0;
-	border-width: 5px 6px;
-	border-style: solid;
-	border-color: #fff;
-}
-button {
-	padding: 3px 6px 4px;
-}
-input:focus, textarea:focus {
-	outline: 2px solid #1165ff;
 }

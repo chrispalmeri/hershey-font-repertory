@@ -1,158 +1,41 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<link rel="stylesheet" href="css/pages.css">
+		<link rel="stylesheet" href="css/pages.css"><!-- keep cause gets embeded in svg -->
+		<link rel="stylesheet" href="css/shared.css">
 		<script type="module" src="js/pages.js"></script>
 	</head>
 	<body>
-		<main>
-			<div id="svg"></div>
-			<div>
-				<h2>Controls</h2>
-				<p><table>
-					<tr><td>group:</td><td><select id="group"><option selected>NWL Occidental</option><option>Oriental</option></select></td></tr>
-					<tr><td>glyphs:</td><td><input type="text" value="501-520" id="glyphs"></td></tr>
-					<tr><td>columns:</td><td><input type="number" value="5" id="columns"></td></tr>
-					<tr><td>rows:</td><td><input type="number" value="4" id="rows"></td></tr>
-					<tr><td>width:</td><td><input type="number" value="34" id="width"></td></tr>
-					<tr><td>height:</td><td><input type="number" value="42" id="height"></td></tr>
-					<tr><td>offset:</td><td><input type="number" value="1" id="offset"></td></tr>
-					<tr><td>bearings:</td><td><input type="checkbox" checked id="bearings"></td></tr>
-					<tr><td>nearby:</td><td><input type="checkbox" checked id="nearby"></td></tr>
-					<tr><td>front:</td><td><input type="checkbox" checked id="front"></td></tr>
-				</table></p>
-				<p><button id="generate">Generate</button></p>
-				<p><a id="download" href="#">Download</a></p>
-				<p><code>glyphs</code> is a whitespace separated list of glyph numbers, ranges, or null (e.g. <code>501 null 503-520</code>).</p>
-				<p><code>offset</code> is vertical shift of glyph and tick marks within cell, positive is down, negative is up.</p>
-				<p><code>nearby</code> controls whether tick marks are shown when within one unit of cell boundary.</p>
-			</div>
-			<div>
-				<h2>Shortcuts</h2>
-				<p>
-					<button class="shortcut" data-params='["NWL Occidental", "1-42", 7, 6, 24, 28, 2, true, true, true]'>01</button>
-					<button class="shortcut" data-params='["NWL Occidental", "43-229", 7, 6, 24, 28, 2, true, true, false]'>02</button>
-					<button class="shortcut" data-params='["NWL Occidental", "501-520", 5, 4, 34, 42, 1, true, true, true]'>03</button>
-					<button class="shortcut" data-params='["NWL Occidental", "521-540", 5, 4, 34, 42, 1, true, true, false]'>04</button>
-					<button class="shortcut" data-params='["NWL Occidental", "541-560", 5, 4, 34, 42, 1, true, true, true]'>05</button>
-					<button class="shortcut" data-params='["NWL Occidental", "561-583", 5, 4, 34, 42, 1, true, true, false]'>06</button>
-					<button class="shortcut" data-params='["NWL Occidental", "601-620", 5, 4, 34, 42, -1, true, true, true]'>07</button>
-					<button class="shortcut" data-params='["NWL Occidental", "621-640", 5, 4, 34, 42, -1, true, true, false]'>08</button>
-					<button class="shortcut" data-params='["NWL Occidental", "641-660", 5, 4, 34, 42, -1, true, true, true]'>09</button>
-					<button class="shortcut" data-params='["NWL Occidental", "661-686", 5, 4, 34, 42, -1, true, true, false]'>10</button>
-					<button class="shortcut" data-params='["NWL Occidental", "null 698-715", 5, 4, 34, 42, 1, true, true, true]'>11</button>
-					<button class="shortcut" data-params='["NWL Occidental", "716-735", 5, 4, 34, 42, 1, true, true, false]'>12</button>
-					<button class="shortcut" data-params='["NWL Occidental", "800-805", 3, 2, 56, 84, 2, false, true, true]'>13</button>
-					<button class="shortcut" data-params='["NWL Occidental", "806-817", 4, 3, 42, 56, 2, false, false, false]'>14</button>
-					<button class="shortcut" data-params='["NWL Occidental", "820 822 824 821 823 825", 3, 2, 56, 84, 2, false, true, true]'>15</button>
-					<button class="shortcut" data-params='["NWL Occidental", "830-834", 3, 2, 56, 84, 2, false, true, false]'>16</button>
-					<button class="shortcut" data-params='["NWL Occidental", "840-857", 4, 4, 42, 42, 2, false, true, true]'>17</button>
-					<button class="shortcut" data-params='["NWL Occidental", "860-868", 3, 3, 56, 56, 2, false, true, false]'>18</button>
-					<button class="shortcut" data-params='["NWL Occidental", "870-905", 4, 3, 42, 56, 2, false, false, true]'>19</button>
-					<button class="shortcut" data-params='["NWL Occidental", "906-909", 2, 2, 84, 84, 0, false, true, false]'>20</button>
-				</p>
-				<p>
-					<button class="shortcut" data-params='["NWL Occidental", "1001-1020", 5, 4, 34, 42, 1, true, true, true]'>21</button>
-					<button class="shortcut" data-params='["NWL Occidental", "1021-1040", 5, 4, 34, 42, 1, true, true, false]'>22</button>
-					<button class="shortcut" data-params='["NWL Occidental", "1041-1060", 5, 4, 34, 42, 1, true, true, true]'>23</button>
-					<button class="shortcut" data-params='["NWL Occidental", "1061-1076", 5, 4, 34, 42, 1, true, true, false]'>24</button>
-					<button class="shortcut" data-params='["NWL Occidental", "1101-1120", 5, 4, 34, 42, 1, true, true, true]'>25</button>
-					<button class="shortcut" data-params='["NWL Occidental", "1121-1140", 5, 4, 34, 42, 1, true, true, false]'>26</button>
-					<button class="shortcut" data-params='["NWL Occidental", "1141-1160", 5, 4, 34, 42, 1, true, true, true]'>27</button>
-					<button class="shortcut" data-params='["NWL Occidental", "1161-1176", 5, 4, 34, 42, -1, true, true, false]'>28</button>
-					<button class="shortcut" data-params='["NWL Occidental", "1177-1186 null null 1191-1195 null null null 1198-1199", 5, 4, 34, 42, 1, true, true, true]'>29</button>
-					<button class="shortcut" data-params='["NWL Occidental", "1200-1219", 5, 4, 34, 42, 1, true, true, false]'>30</button>
-					<button class="shortcut" data-params='["NWL Occidental", "1220-1237", 5, 4, 34, 42, 1, true, true, true]'>31</button>
-					<button class="shortcut" data-params='["NWL Occidental", "1238-1270", 5, 4, 34, 42, 1, true, true, false]'>32</button>
-					<button class="shortcut" data-params='["NWL Occidental", "1271-1278 null null 1281-1290", 5, 4, 34, 42, 1, true, true, true]'>33</button>
-					<button class="shortcut" data-params='["NWL Occidental", "1291-1295", 5, 4, 34, 42, 1, true, true, false]'>34</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2001-2020", 5, 4, 34, 42, 1, true, true, true]'>35</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2021-2040", 5, 4, 34, 42, 1, true, true, false]'>36</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2041-2060", 5, 4, 34, 42, 1, true, true, true]'>37</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2061-2077", 5, 4, 34, 42, -1, true, true, false]'>38</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2101-2120", 5, 4, 34, 42, -1, true, true, true]'>39</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2121-2140", 5, 4, 34, 42, -1, true, true, false]'>40</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2141-2160", 5, 4, 34, 42, -1, true, true, true]'>41</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2161-2176", 5, 4, 34, 42, 1, true, true, false]'>42</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2177-2186 null null 2191-2197 null 2198-2199", 5, 4, 34, 42, -1, true, true, true]'>43</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2200-2219", 5, 4, 34, 42, 1, true, true, false]'>44</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2220-2237", 5, 4, 34, 42, 1, true, true, true]'>45</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2238-2246 null 2251-2260", 5, 4, 34, 42, 1, true, true, false]'>46</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2261-2278", 5, 4, 34, 42, 1, true, true, true]'>47</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2281-2310", 5, 4, 34, 42, 1, true, true, false]'>48</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2311-2312 null null null null null null 2318-2329", 5, 4, 34, 42, 1, true, true, true]'>49</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2330-2332", 3, 2, 56, 84, 0, true, true, false]'>50</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2401-2402 2411-2412", 2, 2, 84, 84, 0, true, true, true]'>51</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2403 2405 2407 2409 2404 2406 2408 2410", 4, 2, 42, 84, 0, true, true, false]'>52</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2501-2520", 5, 4, 34, 42, 1, true, true, true]'>53</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2521-2526 null null null null 2551-2560", 5, 4, 34, 42, 1, true, true, false]'>54</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2561-2576", 5, 4, 34, 42, 1, true, true, true]'>55</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2601-2620", 5, 4, 34, 42, -1, true, true, false]'>56</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2621-2626 null null null null 2651-2660", 5, 4, 34, 42, -1, true, true, true]'>57</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2661-2676", 5, 4, 34, 42, -1, true, true, false]'>58</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2801-2816", 4, 4, 42, 42, 2, true, true, true]'>59</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2817-2832", 4, 4, 42, 42, 2, true, true, false]'>60</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2901-2916", 4, 4, 42, 42, 2, true, true, true]'>61</button>
-					<button class="shortcut" data-params='["NWL Occidental", "2917-2932", 4, 4, 42, 42, 2, true, true, false]'>62</button>
-				</p>
-				<p>
-					<button class="shortcut" data-params='["NWL Occidental", "3001-3020", 5, 4, 34, 42, 1, true, true, true]'>63</button>
-					<button class="shortcut" data-params='["NWL Occidental", "3021-3026 null null null null 3101-3110", 5, 4, 34, 42, 1, true, true, false]'>64</button>
-					<button class="shortcut" data-params='["NWL Occidental", "3111-3126", 5, 4, 34, 42, 1, true, true, true]'>65</button>
-					<button class="shortcut" data-params='["NWL Occidental", "3201-3220", 5, 4, 34, 42, 1, true, true, false]'>66</button>
-					<button class="shortcut" data-params='["NWL Occidental", "3221-3226 null null null null 3301-3310", 5, 4, 34, 42, 1, true, true, true]'>67</button>
-					<button class="shortcut" data-params='["NWL Occidental", "3311-3326", 5, 4, 34, 42, 1, true, true, false]'>68</button>
-					<button class="shortcut" data-params='["NWL Occidental", "3401-3420", 5, 4, 34, 42, 1, true, true, true]'>69</button>
-					<button class="shortcut" data-params='["NWL Occidental", "3421-3426 null null null null 3501-3510", 5, 4, 34, 42, 1, true, true, false]'>70</button>
-					<button class="shortcut" data-params='["NWL Occidental", "3511-3527", 5, 4, 34, 42, 1, true, true, true]'>71</button>
-				</p>
-				<h3>Japanese</h3>
-				<p>
-					<button class="shortcut" data-params='["Oriental", "1-62", 5, 4, 34, 42, 1, true, true, true]'>01</button>
-					<button class="shortcut" data-params='["Oriental", "81-173", 5, 4, 34, 42, 1, true, true, false]'>02</button>
-					<button class="shortcut" data-params='["Oriental", "179-290", 5, 4, 34, 42, 1, true, true, true]'>03</button>
-					<button class="shortcut" data-params='["Oriental", "298-422", 5, 4, 34, 42, 1, true, true, false]'>04</button>
-					<button class="shortcut" data-params='["Oriental", "428-617", 5, 4, 34, 42, 1, true, true, true]'>05</button>
-					<button class="shortcut" data-params='["Oriental", "619-804", 5, 4, 34, 42, 1, true, true, false]'>06</button>
-					<button class="shortcut" data-params='["Oriental", "817-1037", 5, 4, 34, 42, 1, true, true, true]'>07</button>
-					<button class="shortcut" data-params='["Oriental", "1045-1169", 5, 4, 34, 42, 1, true, true, false]'>08</button>
-					<button class="shortcut" data-params='["Oriental", "1170-1355", 5, 4, 34, 42, 1, true, true, true]'>09</button>
-					<button class="shortcut" data-params='["Oriental", "1358-1492", 5, 4, 34, 42, 1, true, true, false]'>10</button>
-					<button class="shortcut" data-params='["Oriental", "1496-1613", 5, 4, 34, 42, 1, true, true, true]'>11</button>
-					<button class="shortcut" data-params='["Oriental", "1614-1827", 5, 4, 34, 42, 1, true, true, false]'>12</button>
-					<button class="shortcut" data-params='["Oriental", "1855-2083", 5, 4, 34, 42, 1, true, true, true]'>13</button>
-					<button class="shortcut" data-params='["Oriental", "2084-2170", 5, 4, 34, 42, 1, true, true, false]'>14</button>
-					<button class="shortcut" data-params='["Oriental", "2194-2378", 5, 4, 34, 42, 1, true, true, true]'>15</button>
-					<button class="shortcut" data-params='["Oriental", "2379-2530", 5, 4, 34, 42, 1, true, true, false]'>16</button>
-					<button class="shortcut" data-params='["Oriental", "2534-2770", 5, 4, 34, 42, 1, true, true, true]'>17</button>
-					<button class="shortcut" data-params='["Oriental", "2772-2943", 5, 4, 34, 42, 1, true, true, false]'>18</button>
-					<button class="shortcut" data-params='["Oriental", "2973-3168", 5, 4, 34, 42, 1, true, true, true]'>19</button>
-					<button class="shortcut" data-params='["Oriental", "3169-3295", 5, 4, 34, 42, 1, true, true, false]'>20</button>
-					<button class="shortcut" data-params='["Oriental", "3306-3509", 5, 4, 34, 42, 1, true, true, true]'>21</button>
-					<button class="shortcut" data-params='["Oriental", "3510-3662", 5, 4, 34, 42, 1, true, true, false]'>22</button>
-					<button class="shortcut" data-params='["Oriental", "3665-3856", 5, 4, 34, 42, 1, true, true, true]'>23</button>
-					<button class="shortcut" data-params='["Oriental", "3860-4214", 5, 4, 34, 42, 1, true, true, false]'>24</button>
-					<button class="shortcut" data-params='["Oriental", "4234-4486", 5, 4, 34, 42, 1, true, true, true]'>25</button>
-					<button class="shortcut" data-params='["Oriental", "4488-4660", 5, 4, 34, 42, 1, true, true, false]'>26</button>
-					<button class="shortcut" data-params='["Oriental", "4661-4813", 5, 4, 34, 42, 1, true, true, true]'>27</button>
-					<button class="shortcut" data-params='["Oriental", "4815-5012", 5, 4, 34, 42, 1, true, true, false]'>28</button>
-					<button class="shortcut" data-params='["Oriental", "5030-5148", 5, 4, 34, 42, 1, true, true, true]'>29</button>
-					<button class="shortcut" data-params='["Oriental", "5152-5428", 5, 4, 34, 42, 1, true, true, false]'>30</button>
-					<button class="shortcut" data-params='["Oriental", "5440-5445 null null null null null null null null null null null null null null null 6200-6202", 5, 4, 34, 42, 1, true, true, true]'>31</button>
-				</p>
-				<p>
-					<button class="shortcut" data-params='["Oriental", "6000-6019", 5, 4, 34, 42, 1, true, true, true]'>32</button>
-					<button class="shortcut" data-params='["Oriental", "6020-6039", 5, 4, 34, 42, 1, true, true, false]'>33</button>
-					<button class="shortcut" data-params='["Oriental", "6040-6050 null null null null 6055-6059", 5, 4, 34, 42, 1, true, true, true]'>34</button>
-					<button class="shortcut" data-params='["Oriental", "6060-6079", 5, 4, 34, 42, 1, true, true, false]'>35</button>
-				</p>
-				<p>
-					<button class="shortcut" data-params='["Oriental", "6100-6119", 5, 4, 34, 42, 1, true, true, true]'>36</button>
-					<button class="shortcut" data-params='["Oriental", "6120-6139", 5, 4, 34, 42, 1, true, true, false]'>37</button>
-					<button class="shortcut" data-params='["Oriental", "6140-6150 null null null null 6155-6159", 5, 4, 34, 42, 1, true, true, true]'>38</button>
-					<button class="shortcut" data-params='["Oriental", "6160-6179", 5, 4, 34, 42, 1, true, true, false]'>39</button>
-				</p>
-			</div>
-		</main>
+		<div>
+			<h2>Navigation</h2>
+			<p>Uses the page numbers reported by PDF readers when viewing <em>NWL Report No 2101.pdf</em>.</p>
+			<p>Page number:</p>
+			<p>
+				<button id="prev">&lt;</button>
+				<input type="text" id="number">
+				<button id="next">&gt;</button>
+			</p>
+		</div>
+		<div id="svg"></div>
+		<div>
+			<h2>Layout</h2>
+			<p><table>
+				<tr><td>Group:</td><td><select id="group"><option selected>Occidental</option><option>Oriental</option></select></td></tr>
+				<tr><td>Glyphs:</td><td><input type="text" value="501-520" id="glyphs"></td></tr>
+				<tr><td>Columns:</td><td><input type="number" value="5" id="columns"></td></tr>
+				<tr><td>Rows:</td><td><input type="number" value="4" id="rows"></td></tr>
+				<tr><td>Width:</td><td><input type="number" value="34" id="width"></td></tr>
+				<tr><td>Height:</td><td><input type="number" value="42" id="height"></td></tr>
+				<tr><td>Offset:</td><td><input type="number" value="1" id="offset"></td></tr>
+				<tr><td>Bearings:</td><td><input type="checkbox" checked id="bearings"></td></tr>
+				<tr><td>Nearby:</td><td><input type="checkbox" checked id="nearby"></td></tr>
+				<tr><td>Front:</td><td><input type="checkbox" checked id="front"></td></tr>
+			</table></p>
+			<p><button id="generate">Generate</button></p>
+			<p><a id="download" href="#">Download</a></p>
+			<p><code>glyphs</code> is a comma separated list of glyph numbers, ranges, or empty cells (e.g. <code>501,,503-520</code>).</p>
+			<p><code>offset</code> is vertical shift of glyph and tick marks within cell, positive is down, negative is up.</p>
+			<p><code>nearby</code> controls whether tick marks are shown when within one unit of cell boundary.</p>
+		</div>
 	</body>
 </html>
