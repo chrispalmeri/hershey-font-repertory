@@ -1,9 +1,9 @@
 function parseLine(line) {
-	var output = [];
-	var index = 0;
-	var data = ''; // to handle empty columns even first one
-	var quoted = false;
-	var escaped = false;
+	const output = [];
+	let index = 0;
+	let data = ''; // to handle empty columns even first one
+	let quoted = false;
+	let escaped = false;
 
 	for (let i = 0; i < line.length; i += 1) {
 		const chr = line[i];
@@ -36,14 +36,14 @@ function parseLine(line) {
 }
 
 function parseCsv(text) {
-	var data = [];
-	var lines = text.split(/\r?\n/);
-	var headers = parseLine(lines[0]);
+	const data = [];
+	const lines = text.split(/\r?\n/);
+	const headers = parseLine(lines[0]);
 
 	for (let i = 1; i < lines.length; i += 1) {
 		if (lines[i].length > 0) { // cause file ends with line break
-			var obj = {};
-			var arr = parseLine(lines[i]);
+			const obj = {};
+			const arr = parseLine(lines[i]);
 
 			// not worried about anything that doesn't align with headers
 			for (let j = 0; j < headers.length; j += 1) {
@@ -69,7 +69,7 @@ function serializeCSV(array) {
 
 	// get headers from first element
 	// will enforce value ordering later, although I doubt it matters
-	let headers = Object.keys(array[0]);
+	const headers = Object.keys(array[0]);
 	output += headers.join(',') + '\r\n';
 
 	for (let i = 0; i < array.length; i += 1) {

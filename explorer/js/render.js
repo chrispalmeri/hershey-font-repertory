@@ -5,7 +5,7 @@ function thumbnail(glp) {
 
 	// I don't think browser knows what to do with 0
 	// cause it was blank in thumbnail, even with overflow visible and working in details
-	if(width === 0) { width = 1; }
+	if (width === 0) width = 1;
 
 	const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 	svg.setAttribute('viewBox', glp.left + ' -25 ' + width + ' 50');
@@ -17,17 +17,15 @@ function thumbnail(glp) {
 
 	svg.dataset.id = glp.id;
 
-
 	const wrap = document.createElement('div');
-	if(!glp.unicode) {
+	if (!glp.unicode) {
 		svg.style.color = '#aaa';
 	}
 	wrap.appendChild(svg);
 
-	wrap.addEventListener('click', function () {
+	wrap.addEventListener('click', function() {
 		details(glp);
 	});
-
 
 	document.getElementById('output').appendChild(wrap);
 }

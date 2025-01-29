@@ -10,7 +10,7 @@ function parseRange(text) {
 			const bounds = value.split('-');
 			const start = parseInt(bounds[0]);
 			const end = parseInt(bounds[1]);
-			for (let i = start; i <= end; i++) {
+			for (let i = start; i <= end; i += 1) {
 				output.push(i);
 			}
 		} else if (value === '') {
@@ -24,7 +24,7 @@ function parseRange(text) {
 }
 
 function parsePath(input) {
-	let output = [];
+	const output = [];
 
 	input = input.replace(/[\n\r]/g, '');
 	input = input.replace(/\s+/g, ' ');
@@ -32,7 +32,7 @@ function parsePath(input) {
 	const segments = input.split('M');
 
 	for (const segment of segments) {
-		let cleaned = [];
+		const cleaned = [];
 		const split = segment.replace('L', ' ').split(/([ -]\d+)/);
 
 		let x = true;
@@ -42,7 +42,7 @@ function parsePath(input) {
 			if (x) {
 				cleaned.push([parseInt(item)]);
 			} else {
-				cleaned[cleaned.length - 1][1] = parseInt(item)
+				cleaned[cleaned.length - 1][1] = parseInt(item);
 			}
 			x = !x;
 		}
@@ -80,14 +80,13 @@ function serializePath(input) {
 function createSvgElement(tag, options) {
 	const element = document.createElementNS('http://www.w3.org/2000/svg', tag);
 
-	for (var key in options) {
-		switch(key) {
+	for (const key in options) {
+		switch (key) {
 			case 'id':
 				element.id = options[key];
 				break;
 			case 'class':
-				let splt = options[key].split(/\s/);
-				for (const itm of splt) {
+				for (const itm of options[key].split(/\s/)) {
 					element.classList.add(itm);
 				}
 				break;

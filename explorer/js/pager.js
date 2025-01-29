@@ -33,14 +33,14 @@ function pagerSetup(input, back, forward, data, func) {
 
 	// Navigation number input
 	display.addEventListener('change', function(e) {
-		let gi = values.findIndex(element => element === e.target.value);
+		const gi = values.findIndex(element => element === e.target.value);
 		if (gi > -1) {
 			index = gi;
 			callback(index);
 		} else {
 			// figure out the valid glyph that is directionaly closest
-			let last = values[index];
-			let desired = parseInt(e.target.value) || 0;
+			const last = values[index];
+			const desired = parseInt(e.target.value) || 0;
 
 			// start high cause findIndex returns first match
 			let highIndex = values.findIndex(element => parseInt(element) > desired);

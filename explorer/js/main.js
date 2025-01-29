@@ -16,17 +16,17 @@ async function render(group = null) {
 			'./data/hersh.oc3',
 			'./data/hersh.oc4'
 			// won't work because they have duplicate id's
-			/*'./data/hersh.or1',
-			'./data/hersh.or2',
-			'./data/hersh.or3',
-			'./data/hersh.or4'*/
+			// './data/hersh.or1',
+			// './data/hersh.or2',
+			// './data/hersh.or3',
+			// './data/hersh.or4'
 		]);
 	}
 
 	if (!glyphs) {
 		console.warn('No glyphs');
 		return;
-	};
+	}
 
 	if (group) {
 		// you should probably cache these to
@@ -40,19 +40,19 @@ async function render(group = null) {
 		}
 	} else {
 		// everything
-		//let temp = 'Id\tLeft\tRight\tPath\n';
+		// let temp = 'Id\tLeft\tRight\tPath\n';
 		for (const id in glyphs) {
 			const glp = glyphs[id] || null;
 			if (glp) {
 				thumbnail(glp);
 			}
-			//temp += `${glp.id}\t${glp.left}\t${glp.right}\t${glp.path}\t\n`;
+			// temp += `${glp.id}\t${glp.left}\t${glp.right}\t${glp.path}\t\n`;
 		}
 		// console.log(temp)
-		/*var link = document.createElement("a");
-		link.setAttribute("href", 'data:text/plain;charset=utf-8,' + encodeURIComponent(temp));
-		link.setAttribute("download", 'numbers.csv');
-		link.click();*/
+		// var link = document.createElement("a");
+		// link.setAttribute("href", 'data:text/plain;charset=utf-8,' + encodeURIComponent(temp));
+		// link.setAttribute("download", 'numbers.csv');
+		// link.click();
 	}
 }
 
@@ -89,7 +89,7 @@ function showOldGroups() {
 	const button = document.createElement('a');
 	button.href = '#';
 	button.innerHTML = 'All';
-	button.addEventListener('click', function (e) {
+	button.addEventListener('click', function(e) {
 		e.preventDefault();
 		render();
 	});
@@ -102,7 +102,7 @@ function showOldGroups() {
 		const button = document.createElement('a');
 		button.href = '#';
 		button.innerHTML = group.name;
-		button.addEventListener('click', function (e) {
+		button.addEventListener('click', function(e) {
 			e.preventDefault();
 			render(group.file);
 		});
@@ -116,10 +116,9 @@ function showOldGroups() {
 
 document.getElementById('usenet').addEventListener('click', showOldGroups);
 
-
 document.getElementById('occsv').addEventListener('click', function() {
 	showCsv('Occidental');
-	//showCsv(['Occidental', 'Additional']);
+	// showCsv(['Occidental', 'Additional']);
 });
 document.getElementById('orcsv').addEventListener('click', function() {
 	showCsv('Oriental');

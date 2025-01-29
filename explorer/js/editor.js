@@ -66,8 +66,8 @@ remove spaces in column names during csv parse, MAYBE parseInt's (check perf if 
 
 */
 
-let alldata = await loadData('NWL Occidental');
-let pagedata = await loadData('NWL Page');
+const alldata = await loadData('NWL Occidental');
+const pagedata = await loadData('NWL Page');
 
 // copy for local changes
 const localData = alldata.map(function(x) {
@@ -76,15 +76,15 @@ const localData = alldata.map(function(x) {
 		'Left Bearing': x['Left Bearing'],
 		'Right Bearing': x['Right Bearing'],
 		'SVG Path': x['SVG Path']
-	}
+	};
 });
 
 // merge data
 // maybe you should do this individually as glyphs are selected?
 for (let i = 0; i < alldata.length; i += 1) {
-	const index = pagedata.findIndex(element => element['Page'] === alldata[i]['Page']);
+	const index = pagedata.findIndex(element => element.Page === alldata[i].Page);
 
-	if(index !== -1) {
+	if (index !== -1) {
 		Object.assign(alldata[i], pagedata[index]);
 	}
 }
@@ -114,7 +114,6 @@ const state = {
 	selectedId: null
 };
 
-
 // Dom elements and initial setup
 
 const svg = document.querySelector('svg');
@@ -127,29 +126,28 @@ const handles = document.getElementById('handles');
 
 let parsed = [];
 let currentIndex = 0;
-var imageSizer = document.createElement('img');
+const imageSizer = document.createElement('img');
 
 imageSizer.addEventListener('load', function() {
-	let width = imageSizer.width / 10;
-	let height = imageSizer.height / 10;
-	let x = width * -1 / 2;
-	let y = height * -1 / 2;
+	const width = imageSizer.width / 10;
+	const height = imageSizer.height / 10;
+	const x = width * -1 / 2;
+	const y = height * -1 / 2;
 	bg.innerHTML = `<image x="${x}" y="${y}" width="${width}" height="${height}" href="${imageSizer.src}"></image>`;
 });
 
 document.getElementById('hide').checked = false; // to keep synced on page refresh
 
-
 // Functions
 
 function updateView() {
-	let viewArr = svg.getAttribute('viewBox').split(' ');
+	const viewArr = svg.getAttribute('viewBox').split(' ');
 	state.view = {
 		x: parseInt(viewArr[0]),
 		y: parseInt(viewArr[1]),
 		width: parseInt(viewArr[2]),
 		height: parseInt(viewArr[3])
-	}
+	};
 
 	// so mouse still tracks after svg size changed
 	state.dom = svg.getBoundingClientRect();
@@ -157,17 +155,17 @@ function updateView() {
 
 function initialRender() {
 	for (let seg = 0; seg < parsed.length; seg += 1) {
-		let segment = parsed[seg];
-		let g = createSvgElement('g', {
+		const segment = parsed[seg];
+		const g = createSvgElement('g', {
 			id: 'grp' + seg,
 			parent: ggp
 		});
 
 		for (let i = 0; i < segment.length - 1; i += 1) {
-			let x1 = segment[i][0];
-			let y1 = segment[i][1];
-			let x2 = segment[i + 1][0];
-			let y2 = segment[i + 1][1];
+			const x1 = segment[i][0];
+			const y1 = segment[i][1];
+			const x2 = segment[i + 1][0];
+			const y2 = segment[i + 1][1];
 
 			createSvgElement('line', {
 				id: `s${seg}l${i}`,
@@ -200,11 +198,11 @@ function navChange(selectedGlyph, really = false) {
 	}
 
 	// Viewbox
-	let width = parseInt(selectedGlyph['Width']) + 2;
-	let height = parseInt(selectedGlyph['Height']) + 2;
-	let x = width * -1 / 2;
-	let y = height * -1 / 2;
-	document.getElementById('svg').setAttribute("viewBox", `${x} ${y} ${width} ${height}`);
+	const width = parseInt(selectedGlyph.Width) + 2;
+	const height = parseInt(selectedGlyph.Height) + 2;
+	const x = width * -1 / 2;
+	const y = height * -1 / 2;
+	document.getElementById('svg').setAttribute('viewBox', `${x} ${y} ${width} ${height}`);
 	updateView();
 
 	// Background image
@@ -214,11 +212,11 @@ function navChange(selectedGlyph, really = false) {
 	// just made it cover everything in inital setup below
 
 	// Width and height
-	document.getElementById('width').value = selectedGlyph['Width'];
-	document.getElementById('height').value = selectedGlyph['Height'];
+	document.getElementById('width').value = selectedGlyph.Width;
+	document.getElementById('height').value = selectedGlyph.Height;
 
 	// Offset
-	let metaOffset = parseInt(selectedGlyph['Vertical Offset']);
+	const metaOffset = parseInt(selectedGlyph['Vertical Offset']);
 	state.offset = isNaN(metaOffset) ? 1 : metaOffset; // old default just in case
 	document.getElementById('offset').value = state.offset;
 	ggp.setAttribute('transform', `translate(0 ${state.offset})`);
@@ -238,7 +236,7 @@ function navChange(selectedGlyph, really = false) {
 	rightb.setAttribute('cx', selectedGlyph['Right Bearing']);
 
 	// Path segments
-	let copy = parsePath(selectedGlyph['SVG Path']);
+	const copy = parsePath(selectedGlyph['SVG Path']);
 	reRender(copy); // will set field value also
 }
 
@@ -285,12 +283,11 @@ pagerSetup(
 // Mouse prep
 state.dom = svg.getBoundingClientRect();
 
-
 // Input changes
 
 // Background image
 document.getElementById('upload').addEventListener('change', function(e) {
-	var reader = new FileReader();
+	const reader = new FileReader();
 
 	reader.addEventListener('load', function(event) {
 		imageSizer.src = event.target.result;
@@ -309,26 +306,26 @@ document.getElementById('hide').addEventListener('change', function(e) {
 
 // Width and height
 document.getElementById('width').addEventListener('change', function(e) {
-	if(e.target.value.length > 0) {
-		let width = parseInt(e.target.value) + 2;
-		let x = width * -1 / 2;
-		document.getElementById('svg').setAttribute("viewBox", `${x} ${state.view.y} ${width} ${state.view.height}`);
+	if (e.target.value.length > 0) {
+		const width = parseInt(e.target.value) + 2;
+		const x = width * -1 / 2;
+		document.getElementById('svg').setAttribute('viewBox', `${x} ${state.view.y} ${width} ${state.view.height}`);
 		updateView();
 	}
 });
 
 document.getElementById('height').addEventListener('change', function(e) {
-	if(e.target.value.length > 0) {
-		let height = parseInt(e.target.value) + 2;
-		let y = height * -1 / 2;
-		document.getElementById('svg').setAttribute("viewBox", `${state.view.x} ${y} ${state.view.width} ${height}`);
+	if (e.target.value.length > 0) {
+		const height = parseInt(e.target.value) + 2;
+		const y = height * -1 / 2;
+		document.getElementById('svg').setAttribute('viewBox', `${state.view.x} ${y} ${state.view.width} ${height}`);
 		updateView();
 	}
 });
 
 // Offset
 document.getElementById('offset').addEventListener('input', function(e) {
-	if(e.target.value.length > 0) {
+	if (e.target.value.length > 0) {
 		state.offset = parseInt(e.target.value);
 		ggp.setAttribute('transform', `translate(0 ${state.offset})`);
 		handles.setAttribute('transform', `translate(0 ${state.offset})`);
@@ -346,7 +343,7 @@ document.getElementById('right').addEventListener('input', function(e) {
 
 // Path
 document.getElementById('out').addEventListener('change', function(e) {
-	let copy = parsePath(e.target.value.trim());
+	const copy = parsePath(e.target.value.trim());
 	reRender(copy);
 });
 
@@ -356,13 +353,13 @@ window.addEventListener('resize', function() {
 });
 
 // Save
-document.getElementById('save').addEventListener('click', function(e) {
+document.getElementById('save').addEventListener('click', function() {
 	localData[currentIndex]['Left Bearing'] = document.getElementById('left').value;
 	localData[currentIndex]['Right Bearing'] = document.getElementById('right').value;
 	localData[currentIndex]['SVG Path'] = document.getElementById('out').value;
 });
 
-document.getElementById('revert').addEventListener('click', function(e) {
+document.getElementById('revert').addEventListener('click', function() {
 	navChange(alldata[currentIndex], true);
 	// I guess also save it?
 	// usually you would use revert to discard unsaved changes
@@ -372,7 +369,7 @@ document.getElementById('revert').addEventListener('click', function(e) {
 	localData[currentIndex]['SVG Path'] = document.getElementById('out').value;
 });
 
-document.getElementById('export').addEventListener('click', function(e) {
+document.getElementById('export').addEventListener('click', function() {
 	const data = serializeCSV(localData);
 	const link = document.createElement('a');
 	link.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(data));
@@ -383,10 +380,10 @@ document.getElementById('export').addEventListener('click', function(e) {
 // MOUSE STUFF
 
 svg.addEventListener('mousemove', function(e) {
-	if(!state.moveHandleRef) return;
+	if (!state.moveHandleRef) return;
 
-	let x = Math.round((e.x - state.dom.x) * state.view.width / state.dom.width + state.view.x);
-	let y = Math.round((e.y - state.dom.y) * state.view.height / state.dom.height + state.view.y - state.offset);
+	const x = Math.round((e.x - state.dom.x) * state.view.width / state.dom.width + state.view.x);
+	const y = Math.round((e.y - state.dom.y) * state.view.height / state.dom.height + state.view.y - state.offset);
 
 	// check if x,y changed since last mouse move
 	// to not spam render
@@ -399,27 +396,26 @@ svg.addEventListener('mousemove', function(e) {
 		state.moveDataRef[0] = state.mouse.x;
 		state.moveDataRef[1] = state.mouse.y;
 
-		let segment = parsed[state.selected];
+		const segment = parsed[state.selected];
 
 		// update the connected lines, just the changed ends
 		if (state.selectedId > 0) {
 			// update preceding line
-			let i = state.selectedId - 1;
-			let elem = document.getElementById(`s${state.selected}l${i}`);
+			const i = state.selectedId - 1;
+			const elem = document.getElementById(`s${state.selected}l${i}`);
 			elem.setAttribute('x2', segment[i + 1][0]);
 			elem.setAttribute('y2', segment[i + 1][1]);
 		}
 		if (state.selectedId < segment.length - 1) {
 			// update following line
-			let i = state.selectedId;
-			let elem = document.getElementById(`s${state.selected}l${i}`);
+			const i = state.selectedId;
+			const elem = document.getElementById(`s${state.selected}l${i}`);
 			elem.setAttribute('x1', segment[i][0]);
 			elem.setAttribute('y1', segment[i][1]);
 		}
 
 		document.getElementById('out').value = serializePath(parsed);
 	}
-
 });
 
 document.addEventListener('mouseup', function() {
@@ -427,18 +423,17 @@ document.addEventListener('mouseup', function() {
 	state.moveDataRef = null;
 });
 
-
 // SELECTION STUFF
 
 // only used one place
 function renderSelected() {
-	let segment = parsed[state.selected];
-	let group = document.getElementById(`grp${state.selected}`);
+	const segment = parsed[state.selected];
+	const group = document.getElementById(`grp${state.selected}`);
 	group.classList.add('selected');
 
 	for (let i = 0; i < segment.length; i += 1) {
-		let x = segment[i][0];
-		let y = segment[i][1];
+		const x = segment[i][0];
+		const y = segment[i][1];
 
 		let cls = 'handle';
 		if (i === 0) cls += ' first';
@@ -467,13 +462,13 @@ function renderSelected() {
 
 function unrenderSelected() {
 	if (state.selected !== null) {
-		let segment = parsed[state.selected];
-		let group = document.getElementById(`grp${state.selected}`);
+		const segment = parsed[state.selected];
+		const group = document.getElementById(`grp${state.selected}`);
 		group.classList.remove('selected');
 
 		// loop remove
 		for (let i = 0; i < segment.length; i += 1) {
-			let oldNode = document.getElementById(`node${i}`);
+			const oldNode = document.getElementById(`node${i}`);
 			if (oldNode) oldNode.remove();
 		}
 
@@ -482,7 +477,7 @@ function unrenderSelected() {
 }
 
 function selectNode(node) {
-	if(state.selectedRef !== null && state.selectedRef !== node) {
+	if (state.selectedRef !== null && state.selectedRef !== node) {
 		deselectNode();
 	}
 	state.selectedRef = node;
@@ -491,7 +486,7 @@ function selectNode(node) {
 }
 
 function deselectNode() {
-	if(state.selectedRef) {
+	if (state.selectedRef) {
 		state.selectedRef.classList.remove('selected');
 		state.selectedId = null;
 		state.selectedRef = null;
@@ -509,12 +504,12 @@ function deleteNode(really = true) {
 	// nuke all the lines
 	let segment = parsed[state.selected];
 	for (let i = 0; i < segment.length - 1; i += 1) {
-		let oldLine = document.getElementById(`s${state.selected}l${i}`);
+		const oldLine = document.getElementById(`s${state.selected}l${i}`);
 		if (oldLine) oldLine.remove();
 	}
 
 	// nuke all the handles
-	let temp = parseInt(state.selected); // just to copy cause unrenderSelected will nuke it
+	const temp = parseInt(state.selected); // just to copy cause unrenderSelected will nuke it
 	unrenderSelected(); // before delete node otherwise it misses last node
 	state.selected = temp;
 
@@ -526,7 +521,7 @@ function deleteNode(really = true) {
 
 	// rerender lines
 	segment = parsed[state.selected];
-	let g = document.getElementById(`grp${state.selected}`);
+	const g = document.getElementById(`grp${state.selected}`);
 	for (let i = 0; i < segment.length - 1; i += 1) {
 		createSvgElement('line', {
 			id: `s${state.selected}l${i}`,
@@ -549,12 +544,12 @@ svg.addEventListener('click', function(e) {
 	// check either e.target.id !== ''
 	// or e.target.parentNode.id !== 'grid'
 	// to make sure it is not a grid line that you clicked on
-	if(e.target.nodeName === 'line' && e.target.id) {
+	if (e.target.nodeName === 'line' && e.target.id) {
 		deselectNode();
 
 		const clicked = parseInt(e.target.parentNode.id.replace('grp', ''));
 		// double check not NaN, but grid fix above should handle it
-		if(clicked !== state.selected && !isNaN(clicked)) {
+		if (clicked !== state.selected && !isNaN(clicked)) {
 			unrenderSelected();
 
 			state.selected = clicked;
@@ -570,17 +565,17 @@ svg.addEventListener('click', function(e) {
 
 // Keyboard handling
 document.addEventListener('keydown', function(e) {
-	if(['input', 'textarea'].indexOf(e.target.localName) >= 0) {
+	if (['input', 'textarea'].indexOf(e.target.localName) >= 0) {
 		return;
 	}
 
-	switch(e.key) {
+	switch (e.key) {
 		case 'Delete':
 			// Delete segment
 			if (state.selectedId !== null) {
 				deleteNode();
 			} else if (state.selected !== null) {
-				let copy = parsed.slice();
+				const copy = parsed.slice();
 				copy.splice(state.selected, 1);
 				reRender(copy);
 			}
@@ -598,15 +593,15 @@ document.addEventListener('keydown', function(e) {
 });
 
 svg.addEventListener('dblclick', function(e) {
-	if(e.target.nodeName === 'line') {
+	if (e.target.nodeName === 'line') {
 		// deselecting, checking selected, etc doesn't matter
 		// cause it gets selected on first click anyway
-		let segment = parsed[state.selected];
+		const segment = parsed[state.selected];
 
-		let x = Math.round((e.x - state.dom.x) * state.view.width / state.dom.width + state.view.x);
-		let y = Math.round((e.y - state.dom.y) * state.view.height / state.dom.height + state.view.y - state.offset);
+		const x = Math.round((e.x - state.dom.x) * state.view.width / state.dom.width + state.view.x);
+		const y = Math.round((e.y - state.dom.y) * state.view.height / state.dom.height + state.view.y - state.offset);
 
-		let line = parseInt(e.target.id.replace(`s${state.selected}l`, ''));
+		const line = parseInt(e.target.id.replace(`s${state.selected}l`, ''));
 
 		segment.splice(line + 1, 0, [x, y]);
 		deleteNode(false); // hacked to basically just re-render lines and handles
