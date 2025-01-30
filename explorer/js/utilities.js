@@ -1,3 +1,32 @@
+// for usenet files
+function parseOldRange(text) {
+	const output = [];
+
+	const matches = text.matchAll(/\S+/g);
+
+	for (const match of matches) {
+		const value = match[0];
+
+		if (/-/.test(value)) {
+			const bounds = value.split('-');
+			const start = parseInt(bounds[0]);
+			const end = parseInt(bounds[1]);
+			for (let i = start; i <= end; i += 1) {
+				output.push(i);
+			}
+		} else if (value === 'null') {
+			output.push(null);
+		} else {
+			output.push(parseInt(value));
+		}
+	}
+
+	return output;
+}
+
+// TODO: combine these again
+
+// for page glyph ranges
 function parseRange(text) {
 	const output = [];
 
@@ -107,4 +136,4 @@ function intersects(n, interval, exact = true) {
 	return (n + 1) % interval === 0 || (n - 1) % interval === 0;
 }
 
-export { parseRange, parsePath, serializePath, createSvgElement, intersects };
+export { parseOldRange, parseRange, parsePath, serializePath, createSvgElement, intersects };

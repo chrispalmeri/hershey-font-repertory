@@ -127,10 +127,11 @@ const handles = document.getElementById('handles');
 let parsed = [];
 let currentIndex = 0;
 const imageSizer = document.createElement('img');
+const PIXELS_PER = 10;
 
 imageSizer.addEventListener('load', function() {
-	const width = imageSizer.width / 10;
-	const height = imageSizer.height / 10;
+	const width = imageSizer.width / PIXELS_PER;
+	const height = imageSizer.height / PIXELS_PER;
 	const x = width * -1 / 2;
 	const y = height * -1 / 2;
 	bg.innerHTML = `<image x="${x}" y="${y}" width="${width}" height="${height}" href="${imageSizer.src}"></image>`;
@@ -152,6 +153,123 @@ function updateView() {
 	// so mouse still tracks after svg size changed
 	state.dom = svg.getBoundingClientRect();
 }
+
+// Selection stuff
+
+function deselectNode() {
+	if (state.selectedRef) {
+		state.selectedRef.classList.remove('selected');
+		state.selectedId = null;
+		state.selectedRef = null;
+	}
+}
+
+function selectNode(node) {
+	if (state.selectedRef !== null && state.selectedRef !== node) {
+		deselectNode();
+	}
+	state.selectedRef = node;
+	state.selectedId = parseInt(node.id.replace('node', ''));
+	node.classList.add('selected');
+}
+
+function renderSelected() {
+	const segment = parsed[state.selected];
+	const group = document.getElementById(`grp${state.selected}`);
+	group.classList.add('selected');
+
+	for (let i = 0; i < segment.length; i += 1) {
+		const x = segment[i][0];
+		const y = segment[i][1];
+
+		let cls = 'handle';
+		if (i === 0) cls += ' first';
+		if (i === segment.length - 1) cls += ' last';
+
+		const handle = createSvgElement('circle', {
+			id: 'node' + i,
+			class: cls,
+			cx: x,
+			cy: y,
+			r: 0.5,
+			parent: handles
+		});
+
+		// move it to the top
+		ggp.appendChild(group);
+
+		handle.addEventListener('mousedown', function(e) {
+			state.moveHandleRef = e.target;
+			state.moveDataRef = segment[i];
+
+			selectNode(e.target);
+		});
+	}
+}
+
+function unrenderSelected() {
+	if (state.selected !== null) {
+		const segment = parsed[state.selected];
+		const group = document.getElementById(`grp${state.selected}`);
+		group.classList.remove('selected');
+
+		// loop remove
+		for (let i = 0; i < segment.length; i += 1) {
+			const oldNode = document.getElementById(`node${i}`);
+			if (oldNode) oldNode.remove();
+		}
+
+		state.selected = null;
+	}
+}
+
+function deleteNode(really = true) {
+	// you need to fully rerender otherwise dom id's don't match array anymore
+	// for both lines and handles
+	// probably should break out functions, only one line does deletion
+	// reusing this for adding nodes also
+	// also, can maybe move delete from middle to top since error checking?
+	// and make nuke loops go +1 always?
+
+	// nuke all the lines
+	let segment = parsed[state.selected];
+	for (let i = 0; i < segment.length - 1; i += 1) {
+		const oldLine = document.getElementById(`s${state.selected}l${i}`);
+		if (oldLine) oldLine.remove();
+	}
+
+	// nuke all the handles
+	const temp = parseInt(state.selected); // just to copy cause unrenderSelected will nuke it
+	unrenderSelected(); // before delete node otherwise it misses last node
+	state.selected = temp;
+
+	// delete the node
+	if (really) {
+		parsed[state.selected].splice(state.selectedId, 1);
+		deselectNode();
+	}
+
+	// rerender lines
+	segment = parsed[state.selected];
+	const g = document.getElementById(`grp${state.selected}`);
+	for (let i = 0; i < segment.length - 1; i += 1) {
+		createSvgElement('line', {
+			id: `s${state.selected}l${i}`,
+			x1: segment[i][0],
+			y1: segment[i][1],
+			x2: segment[i + 1][0],
+			y2: segment[i + 1][1],
+			parent: g // what is this
+		});
+	}
+
+	// rerender handles
+	renderSelected();
+
+	document.getElementById('out').value = serializePath(parsed);
+}
+
+// Navigation stuff
 
 function initialRender() {
 	for (let seg = 0; seg < parsed.length; seg += 1) {
@@ -206,7 +324,8 @@ function navChange(selectedGlyph, really = false) {
 	updateView();
 
 	// Background image
-	imageSizer.src = `img/occidental/${selectedGlyph['Glyph Number'].padStart(4, '0')}.jpg`;
+	const ID_DIGITS = 4;
+	imageSizer.src = `img/occidental/${selectedGlyph['Glyph Number'].padStart(ID_DIGITS, '0')}.jpg`;
 
 	// Grid lines
 	// just made it cover everything in inital setup below
@@ -244,23 +363,28 @@ function navChange(selectedGlyph, really = false) {
 
 // Grid lines
 // you could nuke 'grid' innerHTML and make this a function to redraw
-// used to only draw it to actual height/width (-1 fron viewbox)
+// used to only draw it to actual height/width and no margin (-1 fron viewbox)
 // for now just made it big enough to cover everything (84x84)
-for (let x = -43; x <= 43; x += 1) {
+const GRID_WIDTH = 84;
+const GRID_HEIGHT = 84;
+const GRID_MARGIN = 1;
+const leftRight = GRID_WIDTH / 2 + GRID_MARGIN;
+const topBottom = GRID_HEIGHT / 2 + GRID_MARGIN;
+for (let x = -leftRight; x <= leftRight; x += 1) {
 	createSvgElement('line', {
 		x1: x,
-		y1: -43,
+		y1: -topBottom,
 		x2: x,
-		y2: 43,
+		y2: topBottom,
 		parent: grid
 	});
 }
 
-for (let y = -43; y <= 43; y += 1) {
+for (let y = -topBottom; y <= topBottom; y += 1) {
 	createSvgElement('line', {
-		x1: -43,
+		x1: -leftRight,
 		y1: y,
-		x2: 43,
+		x2: leftRight,
 		y2: y,
 		parent: grid
 	});
@@ -424,120 +548,6 @@ document.addEventListener('mouseup', function() {
 });
 
 // SELECTION STUFF
-
-// only used one place
-function renderSelected() {
-	const segment = parsed[state.selected];
-	const group = document.getElementById(`grp${state.selected}`);
-	group.classList.add('selected');
-
-	for (let i = 0; i < segment.length; i += 1) {
-		const x = segment[i][0];
-		const y = segment[i][1];
-
-		let cls = 'handle';
-		if (i === 0) cls += ' first';
-		if (i === segment.length - 1) cls += ' last';
-
-		const handle = createSvgElement('circle', {
-			id: 'node' + i,
-			class: cls,
-			cx: x,
-			cy: y,
-			r: 0.5,
-			parent: handles
-		});
-
-		// move it to the top
-		ggp.appendChild(group);
-
-		handle.addEventListener('mousedown', function(e) {
-			state.moveHandleRef = e.target;
-			state.moveDataRef = segment[i];
-
-			selectNode(e.target);
-		});
-	}
-}
-
-function unrenderSelected() {
-	if (state.selected !== null) {
-		const segment = parsed[state.selected];
-		const group = document.getElementById(`grp${state.selected}`);
-		group.classList.remove('selected');
-
-		// loop remove
-		for (let i = 0; i < segment.length; i += 1) {
-			const oldNode = document.getElementById(`node${i}`);
-			if (oldNode) oldNode.remove();
-		}
-
-		state.selected = null;
-	}
-}
-
-function selectNode(node) {
-	if (state.selectedRef !== null && state.selectedRef !== node) {
-		deselectNode();
-	}
-	state.selectedRef = node;
-	state.selectedId = parseInt(node.id.replace('node', ''));
-	node.classList.add('selected');
-}
-
-function deselectNode() {
-	if (state.selectedRef) {
-		state.selectedRef.classList.remove('selected');
-		state.selectedId = null;
-		state.selectedRef = null;
-	}
-}
-
-function deleteNode(really = true) {
-	// you need to fully rerender otherwise dom id's don't match array anymore
-	// for both lines and handles
-	// probably should break out functions, only one line does deletion
-	// reusing this for adding nodes also
-	// also, can maybe move delete from middle to top since error checking?
-	// and make nuke loops go +1 always?
-
-	// nuke all the lines
-	let segment = parsed[state.selected];
-	for (let i = 0; i < segment.length - 1; i += 1) {
-		const oldLine = document.getElementById(`s${state.selected}l${i}`);
-		if (oldLine) oldLine.remove();
-	}
-
-	// nuke all the handles
-	const temp = parseInt(state.selected); // just to copy cause unrenderSelected will nuke it
-	unrenderSelected(); // before delete node otherwise it misses last node
-	state.selected = temp;
-
-	// delete the node
-	if (really) {
-		parsed[state.selected].splice(state.selectedId, 1);
-		deselectNode();
-	}
-
-	// rerender lines
-	segment = parsed[state.selected];
-	const g = document.getElementById(`grp${state.selected}`);
-	for (let i = 0; i < segment.length - 1; i += 1) {
-		createSvgElement('line', {
-			id: `s${state.selected}l${i}`,
-			x1: segment[i][0],
-			y1: segment[i][1],
-			x2: segment[i + 1][0],
-			y2: segment[i + 1][1],
-			parent: g // what is this
-		});
-	}
-
-	// rerender handles
-	renderSelected();
-
-	document.getElementById('out').value = serializePath(parsed);
-}
 
 // inconsistent, blanket deselecting node, targeted deselecting path
 svg.addEventListener('click', function(e) {

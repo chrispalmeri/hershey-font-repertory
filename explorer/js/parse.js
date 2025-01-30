@@ -1,5 +1,7 @@
-import { parseRange } from './utilities.js';
+import { parseOldRange } from './utilities.js';
 
+const ID_LEN = 5;
+const LEN_LEN = 3;
 const center = 'R'.charCodeAt(0);
 
 const whole = {};
@@ -22,7 +24,7 @@ function getid(chr) {
 
 	part.id += chr;
 
-	if (part.id.length === 5) {
+	if (part.id.length === ID_LEN) {
 		part.id = parseInt(part.id);
 		parser = getlen;
 	}
@@ -35,7 +37,7 @@ function getlen(chr) {
 
 	part.len += chr;
 
-	if (part.len.length === 3) {
+	if (part.len.length === LEN_LEN) {
 		part.len = parseInt(part.len);
 		parser = getpath;
 	}
@@ -165,7 +167,7 @@ async function parseMap(url) {
 	const file = await fetch(url);
 	const text = await file.text();
 
-	return parseRange(text);
+	return parseOldRange(text);
 }
 
 export { parseFiles, parseMap };

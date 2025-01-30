@@ -4,12 +4,14 @@ import { thumbnail } from './render.js';
 let data = [];
 
 async function loadFile(url) {
-	const file = await fetch(url);
-	if (file.status !== 200) {
+	const response = await fetch(url);
+	// fail silently, for 404 for example
+	// since you are trying to load 'Metadata' and 'Paths' suffix for every request, and they don't always exist
+	if (!response.ok) {
 		return;
 	}
 
-	const text = await file.text();
+	const text = await response.text();
 
 	const records = parseCsv(text);
 
@@ -25,14 +27,9 @@ async function loadFile(url) {
 	}
 }
 
-async function loadData(set) {
+async function loadData(input) {
 	// if set === current set then just return data
-	if (!(set instanceof Array)) {
-		set = [set];
-	}
-
-	// should probably fail silently if file doesn't exist
-	// but will just create empty NWL Override Metadata.csv
+	const set = input instanceof Array ? input : [input];
 
 	data = [];
 
