@@ -26,13 +26,13 @@ function parseRange(text) {
 function parsePath(input) {
 	const output = [];
 
-	input = input.replace(/[\n\r]/g, '');
-	input = input.replace(/\s+/g, ' ');
+	let cleaned = input.replace(/[\n\r]/g, '');
+	cleaned = cleaned.replace(/\s+/g, ' ');
 
-	const segments = input.split('M');
+	const segments = cleaned.split('M');
 
 	for (const segment of segments) {
-		const cleaned = [];
+		const converted = [];
 		const split = segment.replace('L', ' ').split(/([ -]\d+)/);
 
 		let x = true;
@@ -40,14 +40,14 @@ function parsePath(input) {
 			if (['', ' ', '  '].indexOf(item) > -1) continue;
 
 			if (x) {
-				cleaned.push([parseInt(item)]);
+				converted.push([parseInt(item)]);
 			} else {
-				cleaned[cleaned.length - 1][1] = parseInt(item);
+				converted[converted.length - 1][1] = parseInt(item);
 			}
 			x = !x;
 		}
 
-		if (cleaned.length > 0) output.push(cleaned);
+		if (converted.length > 0) output.push(converted);
 	}
 
 	return output;
@@ -101,4 +101,10 @@ function createSvgElement(tag, options) {
 	return element;
 }
 
-export { parseRange, parsePath, serializePath, createSvgElement };
+function intersects(n, interval, exact = true) {
+	if (n % interval === 0) return true;
+	if (exact) return false;
+	return (n + 1) % interval === 0 || (n - 1) % interval === 0;
+}
+
+export { parseRange, parsePath, serializePath, createSvgElement, intersects };

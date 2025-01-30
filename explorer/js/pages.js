@@ -1,6 +1,8 @@
 import { loadData } from './data.js';
-import { parseRange } from './utilities.js';
 import { pagerSetup } from './pager.js';
+import { parseRange, intersects } from './utilities.js';
+
+// TODO: use createSvgElement() from utilities in like ten places in this file
 
 /*
 install the Courier Prime Sans fonts locally
@@ -95,7 +97,10 @@ function serializeRange(group, range) {
 	}
 
 	// get all the ones in database from min to max, assume already sequential glyph order
-	const covered = dataAccess[group].filter(x => parseInt(x['Glyph Number']) >= min && parseInt(x['Glyph Number']) <= max);
+	const covered = dataAccess[group].filter(x => {
+		const gn = parseInt(x['Glyph Number']);
+		return gn >= min && gn <= max;
+	});
 
 	// go through the actual range and gather up ones that are sequential
 	const output = [];
@@ -141,8 +146,6 @@ function serializeRange(group, range) {
 	// end final sequence
 	if (sequence) {
 		output.push(sequence.join('-'));
-		sequence = null;
-		sIndex = null;
 	}
 
 	return output.join(delim);
@@ -154,8 +157,8 @@ function makeSvg(page) {
 	// TODO: get rid of these
 	const columns = parseInt(page.Columns);
 	const rows = parseInt(page.Rows);
-	const width = parseInt(page.Width);
-	const height = parseInt(page.Height);
+	const cellWidth = parseInt(page.Width);
+	const cellHeight = parseInt(page.Height);
 	const offset = parseInt(page['Vertical Offset']);
 	const bearings = page.Bearings;
 	const nearby = page.Nearby;
@@ -187,15 +190,23 @@ function makeSvg(page) {
 	svg.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns', 'http://www.w3.org/2000/svg');
 	svg.setAttribute('version', '1.1');
 
+	// inches
+	const PAGE_WIDTH = 8;
+	const PAGE_HEIGHT = 10.5;
+	const MARGIN_INNER = 1.25; // spine
+	const MARGIN_OUTER = 0.75; // fore-edge
+
 	const rpi = 29; // higher shrinks the graphic on the page
 
-	const gridw = width * columns; // 170
-	const gridh = height * rows; // 168
-	const pagew = 8 * rpi;
-	const pageh = 10.5 * rpi;
-	const inner = 1.25 * rpi; // 36.25
-	const outer = 0.75 * rpi; // 21.75
+	const gridw = cellWidth * columns; // 170
+	const gridh = cellHeight * rows; // 168
+	const pagew = PAGE_WIDTH * rpi;
+	const pageh = PAGE_HEIGHT * rpi;
+	const inner = MARGIN_INNER * rpi; // 36.25
+	const outer = MARGIN_OUTER * rpi; // 21.75
 
+	// these are to center the grid, since if it can be too big or small for the preset margins
+	// depending on how manu columns and rows are selected
 	const hgap = (pagew - inner - outer - gridw) / 2;
 	const vgap = (pageh - gridh) / 2;
 
@@ -224,18 +235,27 @@ function makeSvg(page) {
 	const node = document.createTextNode(styles.trim());
 	style.appendChild(node);
 
+	// cause it was reused a lot
+	const halfCellWidth = cellWidth / 2;
+	const halfCellHeight = cellHeight / 2;
+
+	// for each cell
 	for (let x = 0; x < columns; x += 1) {
 		for (let y = 0; y < rows; y += 1) {
 			const i = (y * columns) + x;
 
-			const tx = x * width + (width / 2);
-			let ty = y * height + (height / 2);
+			// center coordinate of cell
+			const tx = x * cellWidth + halfCellWidth;
+			const ty = y * cellHeight + halfCellHeight + offset;
 
-			const textleft = ((width / 2) - 4) * -1 + 0.3;			// -12.7
-			const texttop = ((height / 2) - 4) * -1 + 1.7 - offset;	// -16.3
-			const textbottom = ((height / 2) - 4) - 0.3 - offset;	// 15.7
+			const TEXT_CENTER = 0.7; // half of the apparent size, to use for centering
+			const TEXT_MARGIN = 5; // from border to center of first character
+			const ID_DIGITS = 4; // leading zeros
 
-			ty = ty + offset; // this seems like the wrong place for this
+			// svg text positioning is from the bottom left corner of the text
+			const textleft = -halfCellWidth + TEXT_MARGIN - TEXT_CENTER;
+			const texttop = -halfCellHeight + TEXT_MARGIN + TEXT_CENTER - offset;
+			const textbottom = halfCellHeight - TEXT_MARGIN + TEXT_CENTER - offset;
 
 			const item = subset[i];
 			// leave blank cells for null
@@ -252,7 +272,7 @@ function makeSvg(page) {
 				}
 
 				const html = `<g transform="translate(${tx} ${ty})">
-					<text x="${textleft}" y="${texttop}">${item['Glyph Number'].padStart(4, '0')}</text>
+					<text x="${textleft}" y="${texttop}">${item['Glyph Number'].padStart(ID_DIGITS, '0')}</text>
 					${bdots}
 					<path d="${item['SVG Path']}"></path>
 					${desc}
@@ -263,22 +283,38 @@ function makeSvg(page) {
 		}
 	}
 
-	for (let x = 0; x <= (columns * width); x += 1) {
-		for (let y = 0; y <= (rows * height); y += 1) {
-			const localx = (x % width) - ((width / 2) % 10);
-			const localy = (y % height) - ((height / 2) % 10 + offset);
+	const TICK_EVERY = 10;
+	const TICK_LENGTH = 0.75; // each side
 
-			if (x % width === 0 || y % height === 0) {
-				// added +-1 also, to not make line if within one of major separator
-				// as seen on Occidental 806-817 page
-				// but it is not like that on 840-857
-				// so 'nearby' flag
-				if (localx % 10 === 0 && x % width !== 0 && (nearby || ((x - 1) % width !== 0 && (x + 1) % width !== 0))) {
-					svg.insertAdjacentHTML('beforeend', `<line x1="${x}" y1="${y - 0.75}" x2="${x}" y2="${y + 0.75}"></line>`);
-				} else if (localy % 10 === 0 && y % height !== 0 && (nearby || ((y - 1) % height !== 0 && (y + 1) % height !== 0))) {
-					svg.insertAdjacentHTML('beforeend', `<line x1="${x - 0.75}" y1="${y}" x2="${x + 0.75}" y2="${y}"></line>`);
+	// x,y relative to whole grid, going though every point in one loop
+	// was easier to deal with the intersections/overlap
+	for (let x = 0; x <= (columns * cellWidth); x += 1) {
+		for (let y = 0; y <= (rows * cellHeight); y += 1) {
+			// relative to individual cell
+			const localx = x % cellWidth;
+			const localy = y % cellHeight;
+
+			if (localx === 0 || localy === 0) {
+				// centered and offset, so can be used for tick marks
+				const correctx = localx - halfCellWidth;
+				const correcty = localy - halfCellHeight - offset;
+
+				// pages 101 and 104 show 'nearby' difference
+				if (intersects(correctx, TICK_EVERY) && !intersects(x, cellWidth, nearby)) {
+					svg.insertAdjacentHTML(
+						'beforeend',
+						`<line x1="${x}" y1="${y - TICK_LENGTH}" x2="${x}" y2="${y + TICK_LENGTH}"></line>`
+					);
+				} else if (intersects(correcty, TICK_EVERY) && !intersects(y, cellHeight, nearby)) {
+					svg.insertAdjacentHTML(
+						'beforeend',
+						`<line x1="${x - TICK_LENGTH}" y1="${y}" x2="${x + TICK_LENGTH}" y2="${y}"></line>`
+					);
 				} else {
-					svg.insertAdjacentHTML('beforeend', `<circle cx="${x}" cy="${y}" r="0.167"></circle>`);
+					svg.insertAdjacentHTML(
+						'beforeend',
+						`<circle cx="${x}" cy="${y}" r="0.167"></circle>`
+					);
 				}
 			}
 		}
@@ -287,7 +323,7 @@ function makeSvg(page) {
 	return svg;
 }
 
-async function showSvg(page) {
+function showSvg(page) {
 	// update the controls
 	// page.glyphs is from UI, so ignore
 	// page.Range is from database

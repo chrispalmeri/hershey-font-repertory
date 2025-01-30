@@ -60,9 +60,9 @@ async function showCsv(set) {
 			left: record['Left Bearing'],
 			right: record['Right Bearing'],
 			path: record['SVG Path'],
-			desc: record['NBS Description'] || record['NWL Pronunciation'],
+			desc: record['NBS Description'] || record['NWL Pronunciation'], // TODO consolidate metadata
 			unicode: record.Unicode,
-			group: record['NBS Font'] || record['NWL Section']
+			group: record['NBS Font'] || record['NWL Section'] // TODO consolidate metadata
 		});
 	}
 }
