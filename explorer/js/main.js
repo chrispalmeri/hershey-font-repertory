@@ -86,16 +86,16 @@ function showOldGroups() {
 	document.getElementById('groups').innerHTML = '';
 
 	// All button
-	const button = document.createElement('a');
-	button.href = '#';
-	button.innerHTML = 'All';
-	button.addEventListener('click', function(e) {
+	const allButton = document.createElement('a');
+	allButton.href = '#';
+	allButton.innerHTML = 'All';
+	allButton.addEventListener('click', function(e) {
 		e.preventDefault();
 		render();
 	});
-	const li = document.createElement('li');
-	li.appendChild(button);
-	document.getElementById('groups').appendChild(li);
+	const allLi = document.createElement('li');
+	allLi.appendChild(allButton);
+	document.getElementById('groups').appendChild(allLi);
 
 	// Group buttons
 	for (const group of groups) {

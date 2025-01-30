@@ -1,8 +1,6 @@
 import { loadData } from './data.js';
 import { pagerSetup } from './pager.js';
-import { parseRange, intersects } from './utilities.js';
-
-// TODO: use createSvgElement() from utilities in like ten places in this file
+import { parseRange, intersects, createSvgElement } from './utilities.js';
 
 /*
 install the Courier Prime Sans fonts locally
@@ -23,8 +21,6 @@ should also do that on the libreoffice pdf at some point
 // TODO
 // optionally embed css font - should probably be in the css anyway if it is public
 // any point to making print media css?
-
-// use utilities.createSvgElement() in this file
 
 // theoretically you could make a whole pdf generator for all pages
 
@@ -65,16 +61,6 @@ pages.forEach(function(page) {
 
 	page.Range = newRange;
 });
-
-pagerSetup(
-	document.getElementById('number'),
-	document.getElementById('prev'),
-	document.getElementById('next'),
-	pages.map(x => x.Page),
-	function(index) {
-		showSvg(pages[index]);
-	}
-);
 
 // still want compatible with range input, so you can make your own pages
 // parseRange is in utilities.js, this is here cause references data
@@ -186,10 +172,6 @@ function makeSvg(page) {
 		}
 	}
 
-	const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-	svg.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns', 'http://www.w3.org/2000/svg');
-	svg.setAttribute('version', '1.1');
-
 	// inches
 	const PAGE_WIDTH = 8;
 	const PAGE_HEIGHT = 10.5;
@@ -217,12 +199,13 @@ function makeSvg(page) {
 		viewx = (outer + hgap) * -1;
 	}
 
-	svg.setAttribute('viewBox', `${viewx} ${viewy} ${pagew} ${pageh}`);
-	svg.setAttribute('width', '8in');
-	svg.setAttribute('height', '10.5in');
-
-	const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
-	svg.appendChild(style);
+	const svg = createSvgElement('svg', {
+		xmlns: 'http://www.w3.org/2000/svg',
+		version: '1.1',
+		viewBox: `${viewx} ${viewy} ${pagew} ${pageh}`,
+		width: '8in',
+		height: '10.5in'
+	});
 
 	let styles = '';
 	const docRules = document.styleSheets[0].cssRules;
@@ -232,8 +215,10 @@ function makeSvg(page) {
 		styles += rule.cssText + ' ';
 	}
 
-	const node = document.createTextNode(styles.trim());
-	style.appendChild(node);
+	createSvgElement('style', {
+		content: styles.trim(),
+		parent: svg
+	});
 
 	// cause it was reused a lot
 	const halfCellWidth = cellWidth / 2;
@@ -242,7 +227,7 @@ function makeSvg(page) {
 	// for each cell
 	for (let x = 0; x < columns; x += 1) {
 		for (let y = 0; y < rows; y += 1) {
-			const i = (y * columns) + x;
+			const i = y * columns + x;
 
 			// center coordinate of cell
 			const tx = x * cellWidth + halfCellWidth;
@@ -260,25 +245,30 @@ function makeSvg(page) {
 			const item = subset[i];
 			// leave blank cells for null
 			if (item) {
-				let desc = '';
-				if (item['NWL Pronunciation']) {
-					desc = `<text x="${textleft}" y="${textbottom}">${item['NWL Pronunciation'].toUpperCase()}</text>`;
-				}
+				const g = createSvgElement('g', { transform: `translate(${tx} ${ty})`, parent: svg });
 
-				let bdots = '';
+				createSvgElement('text', {
+					x: textleft,
+					y: texttop,
+					content: item['Glyph Number'].padStart(ID_DIGITS, '0'),
+					parent: g
+				});
+
 				if (bearings) {
-					bdots = `<circle cx="${item['Left Bearing']}" cy="0" r="0.167"></circle>
-					<circle cx="${item['Right Bearing']}" cy="0" r="0.167"></circle>`;
+					createSvgElement('circle', { cx: item['Left Bearing'], cy: 0, r: 0.167, parent: g });
+					createSvgElement('circle', { cx: item['Right Bearing'], cy: 0, r: 0.167, parent: g });
 				}
 
-				const html = `<g transform="translate(${tx} ${ty})">
-					<text x="${textleft}" y="${texttop}">${item['Glyph Number'].padStart(ID_DIGITS, '0')}</text>
-					${bdots}
-					<path d="${item['SVG Path']}"></path>
-					${desc}
-				</g>`;
+				createSvgElement('path', { d: item['SVG Path'], parent: g });
 
-				svg.insertAdjacentHTML('beforeend', html);
+				if (item['NWL Pronunciation']) {
+					createSvgElement('text', {
+						x: textleft,
+						y: textbottom,
+						content: item['NWL Pronunciation'].toUpperCase(),
+						parent: g
+					});
+				}
 			}
 		}
 	}
@@ -288,8 +278,8 @@ function makeSvg(page) {
 
 	// x,y relative to whole grid, going though every point in one loop
 	// was easier to deal with the intersections/overlap
-	for (let x = 0; x <= (columns * cellWidth); x += 1) {
-		for (let y = 0; y <= (rows * cellHeight); y += 1) {
+	for (let x = 0; x <= columns * cellWidth; x += 1) {
+		for (let y = 0; y <= rows * cellHeight; y += 1) {
 			// relative to individual cell
 			const localx = x % cellWidth;
 			const localy = y % cellHeight;
@@ -301,20 +291,11 @@ function makeSvg(page) {
 
 				// pages 101 and 104 show 'nearby' difference
 				if (intersects(correctx, TICK_EVERY) && !intersects(x, cellWidth, nearby)) {
-					svg.insertAdjacentHTML(
-						'beforeend',
-						`<line x1="${x}" y1="${y - TICK_LENGTH}" x2="${x}" y2="${y + TICK_LENGTH}"></line>`
-					);
+					createSvgElement('line', { x1: x, y1: y - TICK_LENGTH, x2: x, y2: y + TICK_LENGTH, parent: svg });
 				} else if (intersects(correcty, TICK_EVERY) && !intersects(y, cellHeight, nearby)) {
-					svg.insertAdjacentHTML(
-						'beforeend',
-						`<line x1="${x - TICK_LENGTH}" y1="${y}" x2="${x + TICK_LENGTH}" y2="${y}"></line>`
-					);
+					createSvgElement('line', { x1: x - TICK_LENGTH, y1: y, x2: x + TICK_LENGTH, y2: y, parent: svg });
 				} else {
-					svg.insertAdjacentHTML(
-						'beforeend',
-						`<circle cx="${x}" cy="${y}" r="0.167"></circle>`
-					);
+					createSvgElement('circle', { cx: x, cy: y, r: 0.167, parent: svg });
 				}
 			}
 		}
@@ -345,7 +326,7 @@ function showSvg(page) {
 		document.getElementById('front').checked = page.Front;
 	}
 
-	document.getElementById('svg').innerHTML = '';
+	document.getElementById('svg').innerHTML = ''; // wrapper div
 
 	const svg = makeSvg(page);
 
@@ -366,18 +347,28 @@ function showSvg(page) {
 
 document.getElementById('generate').addEventListener('click', function() {
 	const customPage = {
-		Page: 'Custom',
-		Data: document.getElementById('group').value,
-		glyphs: document.getElementById('glyphs').value, // unique in this object
-		Columns: document.getElementById('columns').value,
-		Rows: document.getElementById('rows').value,
-		Width: document.getElementById('width').value,
-		Height: document.getElementById('height').value,
+		'Page': 'Custom',
+		'Data': document.getElementById('group').value,
+		'glyphs': document.getElementById('glyphs').value, // unique in this object
+		'Columns': document.getElementById('columns').value,
+		'Rows': document.getElementById('rows').value,
+		'Width': document.getElementById('width').value,
+		'Height': document.getElementById('height').value,
 		'Vertical Offset': document.getElementById('offset').value,
-		Bearings: document.getElementById('bearings').checked,
-		Nearby: document.getElementById('nearby').checked,
-		Front: document.getElementById('front').checked
+		'Bearings': document.getElementById('bearings').checked,
+		'Nearby': document.getElementById('nearby').checked,
+		'Front': document.getElementById('front').checked
 	};
 
 	showSvg(customPage);
 });
+
+pagerSetup(
+	document.getElementById('number'),
+	document.getElementById('prev'),
+	document.getElementById('next'),
+	pages.map(x => x.Page),
+	function(index) {
+		showSvg(pages[index]);
+	}
+);

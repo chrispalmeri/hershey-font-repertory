@@ -119,6 +119,9 @@ function createSvgElement(tag, options) {
 					element.classList.add(itm);
 				}
 				break;
+			case 'content':
+				element.textContent = options[key];
+				break;
 			case 'parent':
 				options[key].appendChild(element);
 				break;
