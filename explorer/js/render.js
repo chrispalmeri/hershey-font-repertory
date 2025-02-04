@@ -23,7 +23,13 @@ function thumbnail(glp) {
 	}
 	wrap.appendChild(svg);
 
-	wrap.addEventListener('click', function() {
+	wrap.addEventListener('click', () => {
+		const selectedItems = document.getElementById('output').querySelectorAll('.selected');
+		selectedItems.forEach(item => {
+			item.classList.remove('selected');
+		});
+		wrap.classList.add('selected');
+
 		details(glp);
 	});
 
